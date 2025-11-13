@@ -2,56 +2,43 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>💳 Payment - KK Homestay</title>
+<title>💳 Payment</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
+<style>
+.container { max-width:500px; margin:20px auto; background:white; padding:15px; border-radius:10px; }
+button { padding:10px 15px; margin-top:10px; }
+</style>
 </head>
 <body>
-<header>
-  <h1>Complete Payment</h1>
-  <nav><a href="homestays.html">Back to Homestays</a></nav>
-</header>
 
-<section>
-  <p id="payment-info"></p>
-  <button id="pay-button">Simulate Payment</button>
-  <p id="status"></p>
-</section>
+<div class="container">
+<h2>Payment</h2>
+<p id="info"></p>
+<button id="pay-btn">Simulate Payment</button>
+</div>
 
 <script>
-const API_BASE = "https://kk-homestay-backend.onrender.com";
-let userId = localStorage.getItem("user_id");
-let username = localStorage.getItem("username");
-let bookingInfo = JSON.parse(localStorage.getItem("booking_info"));
+const API_BASE="https://kk-homestay-backend.onrender.com";
+const params=new URLSearchParams(window.location.search);
+const booking_id=params.get("booking_id");
 
-if(!userId || !bookingInfo){
-  alert("Missing booking info. Please login and select a homestay.");
-  window.location.href = "homestays.html";
+async function loadBooking(){
+  const res=await fetch(`${API_BASE}/bookings`);
+  const data=await res.json();
+  const b=data.find(x=>x.id==booking_id);
+  if(!b){ alert("Booking not found"); return; }
+  document.getElementById("info").textContent=`Booking for ${b.user} on ${b.date}. Amount: RM ${b.price||0}`;
 }
 
-document.getElementById("payment-info").textContent =
-  `User: ${username}\nHomestay ID: ${bookingInfo.homestay_id}\nDate: ${bookingInfo.date}\nPrice: RM 100 (placeholder)`;
-
-document.getElementById("pay-button").addEventListener("click", async ()=>{
-  // simulate payment
-  try{
-    const res = await fetch(`${API_BASE}/book`,{
-      method:"POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        homestay_id: parseInt(bookingInfo.homestay_id),
-        user_id: parseInt(userId),
-        date: bookingInfo.date
-      })
-    });
-    const data = await res.json();
-    document.getElementById("status").textContent = "Payment successful! Booking created.";
-    localStorage.removeItem("booking_info");
-    setTimeout(()=> window.location.href="homestays.html", 1500);
-  }catch(err){
-    document.getElementById("status").textContent = "Payment failed.";
-  }
+document.getElementById("pay-btn").addEventListener("click", async ()=>{
+  const res=await fetch(`${API_BASE}/bookings/${booking_id}/pay`,{method:"POST"});
+  const data=await res.json();
+  alert(data.message);
+  if(data.success) window.location.href="index.html";
 });
+
+loadBooking();
 </script>
 </body>
 </html>

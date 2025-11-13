@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>📊 KK Homestay Booking Analysis</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<header>
+<h1>Booking Analysis</h1>
+<nav>
+  <a href="admin.html">Back to Admin Dashboard</a>
+</nav>
+</header>
+
+<section>
+<h2>Bookings per Homestay</h2>
+<canvas id="homestayChart" height="200"></canvas>
+
+<h2>Bookings Over Time</h2>
+<canvas id="timeChart" height="200"></canvas>
+</section>
+
+<script>
+const API_BASE = "https://kk-homestay-backend.onrender.com";
+
+async function fetchBookings() {
+    const res = await fetch(`${API_BASE}/bookings`);
+    return await res.json();
+}
+
+async function renderCharts() {
+    const data = await fetchBookings();
+
+    // Count bookings per homestay
+    const homestayCount = {};
+    const dateCount = {};
+    data.forEach(b => {
+        // Homestay counts
+        homestayCount[b.homestay] = (homestayCount[b.homestay] || 0) + 1;
+
+        // Date counts
+        dateCount[b.date] = (dateCount[b.date] || 0) + 1;
+    });
+
+    // Prepare data for Chart.js
+    const homestayLabels = Object.keys(homestayCount);
+    const homestayData = Object.values(homestayCount);
+
+    const timeLabels = Object.keys(dateCount).sort();
+    const timeData = timeLabels.map(d => dateCount[d]);
+
+    // Chart: Bookings per Homestay
+    const ctx1 = document.getElementById("homestayChart").getContext("2d");
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: homestayLabels,
+            datasets: [{
+                label: 'Number of Bookings',
+                data: homestayData,
+                backgroundColor: '#007bff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Chart: Bookings over Time
+    const ctx2 = document.getElementById("timeChart").getContext("2d");
+    new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: timeLabels,
+            datasets: [{
+                label: 'Bookings',
+                data: timeData,
+                fill: false,
+                borderColor: '#28a745',
+                tension: 0.2
+            }]
+        },
+        options: { responsive: true }
+    });
+}
+
+renderCharts();
+</script>
+</body>
+</html>

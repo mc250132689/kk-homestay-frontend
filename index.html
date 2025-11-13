@@ -1,12 +1,29 @@
-<!-- Inside <body> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🏡 KK Homestay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>🏡 KK Homestay</h1>
+  <nav>
+    <a href="signup.html">Signup</a>
+    <a href="login.html">Login</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+</header>
+
 <section>
 <h2>Explore Homestays</h2>
 <div class="carousel">
-    <div class="carousel-images" id="carousel-images"></div>
-    <div class="carousel-buttons">
-        <button onclick="prevSlide()">‹</button>
-        <button onclick="nextSlide()">›</button>
-    </div>
+  <div class="carousel-images" id="carousel-images"></div>
+  <div class="carousel-buttons">
+    <button onclick="prevSlide()">‹</button>
+    <button onclick="nextSlide()">›</button>
+  </div>
 </div>
 </section>
 
@@ -26,7 +43,7 @@ async function loadCarousel(){
     container.innerHTML="";
     images.forEach((img,i)=>{
         const el=document.createElement("img");
-        el.src=`${API_BASE}${img}`;
+        el.src=img;
         if(i===0) el.classList.add("active");
         container.appendChild(el);
     });
@@ -50,3 +67,5 @@ function nextSlide(){
 
 loadCarousel();
 </script>
+</body>
+</html>

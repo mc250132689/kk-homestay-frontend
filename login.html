@@ -22,26 +22,30 @@
 </section>
 
 <script>
-const API_BASE="https://kk-homestay-backend.onrender.com";
-let currentUserId=null; // store user_id in session memory
+const API_BASE = "https://kk-homestay-backend.onrender.com";
 
 document.getElementById("login-form").addEventListener("submit", async e=>{
   e.preventDefault();
-  const username=document.getElementById("username").value;
-  const password=document.getElementById("password").value;
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
   try{
-    const res=await fetch(`${API_BASE}/login`,{
+    const res = await fetch(`${API_BASE}/login`,{
       method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({username,password})
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({username,password})
     });
-    const data=await res.json();
-    currentUserId=data.user_id;
-    document.getElementById("status").textContent=data.message;
-    // redirect to homestays with user_id in URL
-    setTimeout(()=>window.location.href=`homestays.html?user_id=${currentUserId}&username=${username}`,1000);
+    const data = await res.json();
+    localStorage.setItem("user_id", data.user_id);
+    localStorage.setItem("username", username);
+    document.getElementById("status").textContent = data.message;
+
+    setTimeout(()=>{
+      window.location.href = localStorage.getItem("last_page") || "homestays.html";
+      localStorage.removeItem("last_page");
+    }, 1000);
   }catch(err){
-    document.getElementById("status").textContent="Login failed. Check credentials.";
+    document.getElementById("status").textContent = "Login failed. Check credentials.";
   }
 });
 </script>

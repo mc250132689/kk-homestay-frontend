@@ -20,31 +20,31 @@
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
-const params=new URLSearchParams(window.location.search);
-const userId=params.get("user_id");
-const username=params.get("username");
+let userId = localStorage.getItem("user_id");
+let username = localStorage.getItem("username");
 if(!userId){ alert("Please login first"); window.location.href="login.html"; }
 
 async function loadHomestays(){
-  const res=await fetch(`${API_BASE}/homestays`);
-  const data=await res.json();
-  const container=document.getElementById("homestay-list");
+  const res = await fetch(`${API_BASE}/homestays`);
+  const data = await res.json();
+  const container = document.getElementById("homestay-list");
   container.innerHTML="";
-  data.forEach(h=>{
-    const div=document.createElement("div");
+  data.forEach(h => {
+    const div = document.createElement("div");
     div.className="homestay-card";
-    div.innerHTML=`<h3>${h.name}</h3>
+    div.innerHTML=`
+      <h3>${h.name}</h3>
+      <div>${h.images.map(i=>`<img src="${i}">`).join('')}</div>
       <p><strong>Location:</strong> ${h.location}</p>
       <p><strong>Price:</strong> RM ${h.price}/night</p>
-      <div>${h.images.map(i=>`<img src="${i}">`).join('')}</div>
       <p>${h.description}</p>
-      <button onclick="bookNow(${h.id})">Book Now</button>`;
+      <button onclick="viewDetails(${h.id})">View Details</button>`;
     container.appendChild(div);
   });
 }
 
-function bookNow(id){
-  window.location.href=`booking.html?homestay_id=${id}&user_id=${userId}&username=${username}`;
+function viewDetails(id){
+  window.location.href=`homestay_details.html?homestay_id=${id}`;
 }
 
 loadHomestays();

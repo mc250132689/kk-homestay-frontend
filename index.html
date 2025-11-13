@@ -5,100 +5,13 @@
 <title>🏡 KK Homestay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
-<style>
-body {
-  background: url('static/images/kinabalu.jpg') no-repeat center/cover;
-  color: #fff;
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-header {
-  background: rgba(0,123,255,0.9);
-  padding: 1em;
-  text-align: center;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-nav a {
-  color: white;
-  margin: 0 10px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-nav a:hover { text-decoration: underline; }
-
-.carousel {
-  position: relative;
-  max-width: 900px;
-  margin: 20px auto;
-  overflow: hidden;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
-}
-
-.carousel img {
-  width: 100%;
-  height: 400px;
-  object-fit: cover;
-  display: none;
-  transition: opacity 0.5s;
-}
-
-.carousel img.active {
-  display: block;
-  opacity: 1;
-}
-
-.carousel-overlay {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  color: #fff;
-  font-size: 24px;
-  background: rgba(0,0,0,0.5);
-  padding: 5px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.carousel-buttons {
-  position: absolute;
-  top: 50%;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  transform: translateY(-50%);
-}
-
-.carousel-buttons button {
-  background: rgba(0,0,0,0.5);
-  color: white;
-  border: none;
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 16px;
-}
-
-@media(max-width:600px){
-  .carousel img { height: 200px; }
-  header { font-size: 14px; }
-  nav a { margin: 0 5px; font-size: 14px; }
-  .carousel-overlay { font-size: 16px; padding: 3px 8px; }
-}
-</style>
 </head>
 <body>
-
 <header>
   <h1>🏡 KK Homestay</h1>
   <nav>
     <a href="homestays.html">View Homestays</a>
-    <a href="login.html">Login / Signup</a>
+    <a href="login.html" id="login-link">Login / Signup</a>
     <a href="admin.html">Admin</a>
   </nav>
 </header>
@@ -114,32 +27,18 @@ nav a:hover { text-decoration: underline; }
 
 <script>
 const API_BASE = "https://kk-homestay-backend.onrender.com";
+let userId = localStorage.getItem("user_id");
+let username = localStorage.getItem("username");
 
-// Get logged-in user info from backend session
-let userId = null;
-let username = null;
-
-async function checkUser() {
-  try {
-    // You should have an endpoint /me or /session returning {user_id, username} if logged in
-    const res = await fetch(`${API_BASE}/me`);
-    if(res.ok){
-      const data = await res.json();
-      userId = data.user_id;
-      username = data.username;
-    }
-  } catch(err){
-    console.log("User not logged in", err);
-  }
+if(userId){
+  document.getElementById("login-link").textContent = `Hi, ${username}`;
+  document.getElementById("login-link").href = "#";
 }
 
 async function loadCarousel(){
-  await checkUser();
-
   const res = await fetch(`${API_BASE}/homestays`);
   const data = await res.json();
   const carousel = document.getElementById("carousel");
-
   const slides = [];
 
   data.forEach(h => {
@@ -154,17 +53,14 @@ async function loadCarousel(){
       const overlay = document.createElement("div");
       overlay.className = "carousel-overlay";
       overlay.textContent = h.name;
-
-      // Click overlay to go to booking page if logged in
       overlay.onclick = () => {
-        if(userId) {
-          window.location.href = `booking.html?homestay_id=${h.id}`;
+        if(userId){
+          window.location.href = `homestay_details.html?homestay_id=${h.id}`;
         } else {
-          alert("Please login first to book a homestay.");
+          alert("Please login to view details.");
           window.location.href = "login.html";
         }
       };
-
       wrapper.appendChild(overlay);
       carousel.appendChild(wrapper);
       slides.push(wrapper);
@@ -181,7 +77,6 @@ async function loadCarousel(){
   }
 
   let interval = setInterval(()=> showSlide(idx+1), 4000);
-
   document.getElementById("prev").onclick = ()=>{ showSlide(idx-1); resetInterval(); };
   document.getElementById("next").onclick = ()=>{ showSlide(idx+1); resetInterval(); };
 

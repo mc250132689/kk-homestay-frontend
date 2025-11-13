@@ -5,44 +5,33 @@
 <title>Signup - KK Homestay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
-<style>
-body { display:flex; justify-content:center; align-items:center; height:100vh; font-family:'Segoe UI',sans-serif; }
-form { background: rgba(255,255,255,0.95); padding:20px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.2);}
-input { display:block; width:100%; margin:10px 0; padding:8px; border-radius:6px; border:1px solid #ccc; }
-.btn { padding:8px 12px; border-radius:8px; cursor:pointer; background:#28a745; color:#fff; border:none; width:100%; transition:.3s;}
-.btn:hover { background:#218838;}
-</style>
 </head>
 <body>
-<form id="signup-form">
-<h3>Signup</h3>
-<input type="text" id="username" placeholder="Username" required/>
-<input type="password" id="password" placeholder="Password" required/>
-<button class="btn" type="submit">Signup</button>
-<p>Already have account? <a href="login.html">Login</a></p>
-</form>
-
+<header>
+  <h1>Signup</h1>
+  <nav><a href="index.html">Home</a> | <a href="login.html">Login</a></nav>
+</header>
+<section>
+  <form id="signupForm">
+    <input type="text" placeholder="Username" id="username" required>
+    <input type="password" placeholder="Password" id="password" required>
+    <button type="submit">Signup</button>
+  </form>
+  <p id="msg"></p>
+</section>
 <script>
-const API="https://kk-homestay-backend.onrender.com";
-document.getElementById('signup-form').addEventListener('submit', async e=>{
+document.getElementById('signupForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const username=document.getElementById('username').value;
   const password=document.getElementById('password').value;
-  try{
-    const res=await fetch(`${API}/signup`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username,password})
-    });
-    if(res.ok){
-      const data=await res.json();
-      alert(data.message);
-      window.location.href='login.html';
-    } else {
-      const err=await res.json();
-      alert(err.detail);
-    }
-  }catch(e){alert('Error connecting to server');}
+  const res=await fetch('http://127.0.0.1:8000/signup',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username,password})
+  });
+  const data=await res.json();
+  document.getElementById('msg').textContent = data.message || data.detail;
+  if(res.ok) setTimeout(()=>{ window.location='login.html'; },1000);
 });
 </script>
 </body>

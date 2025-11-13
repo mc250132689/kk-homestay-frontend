@@ -5,88 +5,23 @@
 <title>🏡 KK Homestay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
+<style>
+body {
+  background: url('static/images/kinabalu.jpg') no-repeat center/cover;
+  color: #fff;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+</style>
 </head>
 <body>
-<header>
-  <h1>🏡 KK Homestay</h1>
-  <nav>
-    <a href="homestays.html">View Homestays</a>
-    <a href="login.html" id="login-link">Login / Signup</a>
-    <a href="admin.html">Admin</a>
-  </nav>
-</header>
-
-<section>
-  <div class="carousel" id="carousel">
-    <div class="carousel-buttons">
-      <button id="prev">&lt;</button>
-      <button id="next">&gt;</button>
-    </div>
-  </div>
-</section>
-
+<h1>Welcome to KK Homestay</h1>
 <script>
-const API_BASE = "https://kk-homestay-backend.onrender.com";
-let userId = localStorage.getItem("user_id");
-let username = localStorage.getItem("username");
-
-if(userId){
-  document.getElementById("login-link").textContent = `Hi, ${username}`;
-  document.getElementById("login-link").href = "#";
-}
-
-async function loadCarousel(){
-  const res = await fetch(`${API_BASE}/homestays`);
-  const data = await res.json();
-  const carousel = document.getElementById("carousel");
-  const slides = [];
-
-  data.forEach(h => {
-    h.images.forEach(img => {
-      const wrapper = document.createElement("div");
-      wrapper.style.position = "relative";
-
-      const image = document.createElement("img");
-      image.src = img;
-      wrapper.appendChild(image);
-
-      const overlay = document.createElement("div");
-      overlay.className = "carousel-overlay";
-      overlay.textContent = h.name;
-      overlay.onclick = () => {
-        if(userId){
-          window.location.href = `homestay_details.html?homestay_id=${h.id}`;
-        } else {
-          alert("Please login to view details.");
-          window.location.href = "login.html";
-        }
-      };
-      wrapper.appendChild(overlay);
-      carousel.appendChild(wrapper);
-      slides.push(wrapper);
-    });
-  });
-
-  let idx = 0;
-  if(slides.length) slides[idx].querySelector("img").classList.add("active");
-
-  function showSlide(n){
-    slides[idx].querySelector("img").classList.remove("active");
-    idx = (n + slides.length) % slides.length;
-    slides[idx].querySelector("img").classList.add("active");
-  }
-
-  let interval = setInterval(()=> showSlide(idx+1), 4000);
-  document.getElementById("prev").onclick = ()=>{ showSlide(idx-1); resetInterval(); };
-  document.getElementById("next").onclick = ()=>{ showSlide(idx+1); resetInterval(); };
-
-  function resetInterval(){
-    clearInterval(interval);
-    interval = setInterval(()=> showSlide(idx+1), 4000);
-  }
-}
-
-loadCarousel();
+  setTimeout(()=>{ window.location.href='home.html'; }, 1000);
 </script>
 </body>
 </html>

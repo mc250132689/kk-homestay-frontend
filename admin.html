@@ -10,7 +10,9 @@
 <body>
 <header>
 <h1>Admin Dashboard</h1>
-<nav><a href="index.html">Home</a> | <a href="admin_analysis.html">View Analysis</a></nav>
+<nav>
+<a href="index.html">Home</a> | <a href="admin_analysis.html">View Analysis</a>
+</nav>
 </header>
 
 <section>
@@ -40,8 +42,6 @@
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
-
-// Admin login: username=admin, password=admin
 document.getElementById("admin-login-form").addEventListener("submit", async e=>{
     e.preventDefault();
     const user=document.getElementById("admin-user").value;
@@ -50,25 +50,9 @@ document.getElementById("admin-login-form").addEventListener("submit", async e=>
         alert("Login successful");
         document.getElementById("admin-login-form").style.display="none";
         document.getElementById("admin-section").style.display="block";
-        fetchHomestays();
         fetchBookings();
     } else { alert("Invalid credentials"); }
 });
-
-async function fetchHomestays(){
-    const res=await fetch(`${API_BASE}/homestays`);
-    const data=await res.json();
-    const list=document.getElementById("homestay-list");
-    if(!list) return;
-    list.innerHTML="";
-    data.forEach(h=>{
-        const div=document.createElement("div");
-        div.className="homestay-card";
-        div.innerHTML=`<h3>${h.name}</h3><p>${h.location}</p><p>RM ${h.price}</p><p>${h.description}</p>
-<p>Images: ${(h.images||[]).join(", ")}</p>`;
-        list.appendChild(div);
-    });
-}
 
 async function fetchBookings(){
     const res=await fetch(`${API_BASE}/bookings`);
@@ -83,6 +67,7 @@ async function fetchBookings(){
     });
 }
 
+// Admin form submit
 document.getElementById("admin-form").addEventListener("submit", async e=>{
     e.preventDefault();
     const id=document.getElementById("homestay_id").value;
@@ -99,7 +84,7 @@ document.getElementById("admin-form").addEventListener("submit", async e=>{
     const r=await res.json();
     alert(r.message);
     document.getElementById("admin-form").reset();
-    fetchHomestays();
+    fetchBookings();
 });
 </script>
 </body>

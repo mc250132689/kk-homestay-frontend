@@ -1,58 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>KK Homestay - Browse</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>🏡 KK Homestays</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <h1>🏡 KK Homestay</h1>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="homestays.html">Browse</a>
-    <a href="admin.html">Admin</a>
-  </nav>
+  <h1>Available Homestays</h1>
+  <nav><a href="index.html">Home</a></nav>
 </header>
-<main>
-  <h2>Available Homestays</h2>
-  <div id="homestay-list">Loading...</div>
-</main>
+
+<section id="homestay-list"></section>
 
 <script>
 const API_BASE = "https://kk-homestay-backend.onrender.com";
 
-async function fetchHomestays(){
-  const res = await fetch(`${API_BASE}/homestays`);
-  const data = await res.json();
-  const container = document.getElementById("homestay-list");
-  container.innerHTML = data.map(h=>{
-    let imgs = JSON.parse(h.images || '["https://via.placeholder.com/400x200"]');
-    let carousel = `<div class="carousel">${imgs.map((img,i)=>`<img src="${img}" class="carousel-img ${i===0?'active':''}">`).join('')}
-    <button class="prev">&#10094;</button><button class="next">&#10095;</button></div>`;
-    return `<div class="homestay-card">${carousel}
-      <h3>${h.name}</h3>
-      <p>${h.description}</p>
-      <p><b>Location:</b> ${h.location}</p>
-      <p><b>Price:</b> RM${h.price}</p>
-      <a href="booking.html?id=${h.id}" class="btn">Book Now</a>
-    </div>`;
-  }).join('');
+async function loadHomestays() {
+  try {
+    const res = await fetch(`${API_BASE}/homestays`);
+    const data = await res.json();
+    const container = document.getElementById("homestay-list");
+    container.innerHTML = "";
 
-  // carousel logic
-  document.querySelectorAll('.homestay-card').forEach(card=>{
-    let index=0;
-    const imgs=card.querySelectorAll('.carousel-img');
-    const prev=card.querySelector('.prev');
-    const next=card.querySelector('.next');
-    function show(i){imgs.forEach(im=>im.classList.remove('active'));imgs[i].classList.add('active');}
-    prev.addEventListener('click',()=>{index=(index-1+imgs.length)%imgs.length;show(index);});
-    next.addEventListener('click',()=>{index=(index+1)%imgs.length;show(index);});
-    setInterval(()=>{index=(index+1)%imgs.length;show(index);},4000);
-  });
+    if (!data.length) {
+      container.innerHTML = "<p>No homestays found.</p>";
+      return;
+    }
+
+    data.forEach(h => {
+      const div = document.createElement("div");
+      div.className = "homestay-card";
+      div.innerHTML = `
+        <h3>${h.name}</h3>
+        <p><strong>Location:</strong> ${h.location}</p>
+        <p><strong>Price:</strong> RM ${h.price}/night</p>
+        <p>${h.description}</p>
+        <button onclick="bookNow(${h.id})">Book Now</button>
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    document.getElementById("homestay-list").innerHTML = "Failed to load homestays.";
+  }
 }
-fetchHomestays();
+
+function bookNow(id) {
+  window.location.href = `booking.html?homestay_id=${id}`;
+}
+
+loadHomestays();
 </script>
 </body>
 </html>

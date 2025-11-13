@@ -94,6 +94,9 @@ button:hover {
     margin-top: 20px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .homestay-card:hover {
@@ -102,10 +105,23 @@ button:hover {
 
 .homestay-card img {
     width: 100%;
-    max-height: 200px;
+    max-height: 250px;
     object-fit: cover;
     border-radius: 10px;
     margin-bottom: 10px;
+}
+
+/* Multiple images inside card */
+.homestay-card .images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.homestay-card .images img {
+    width: 45%;
+    max-height: 150px;
 }
 
 /* ------------------------
@@ -154,13 +170,9 @@ button:hover {
    Responsive
 -------------------------*/
 @media (max-width: 768px) {
-    body {
-        font-size: 15px;
-    }
-    section {
-        padding: 15px;
-    }
-    form {
-        padding: 15px;
-    }
+    body { font-size: 15px; }
+    section { padding: 15px; }
+    form { padding: 15px; }
+    .homestay-card .images img { width: 100%; }
+    .homestay-card img { max-height: 200px; }
 }

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🏡 Homestay Details</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<style>
+.container { max-width: 900px; margin:20px auto; background:white; padding:15px; border-radius:10px; }
+.image-preview img { width:200px; height:150px; object-fit:cover; margin:5px; border-radius:6px; }
+button { margin-top:10px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2 id="name"></h2>
+<p id="location"></p>
+<p id="price"></p>
+<p id="description"></p>
+<div class="image-preview" id="images"></div>
+<button id="book-btn">Book Now</button>
+</div>
+
+<script>
+const API_BASE="https://kk-homestay-backend.onrender.com";
+const params=new URLSearchParams(window.location.search);
+const id=params.get("id");
+
+async function loadDetails(){
+  const res=await fetch(`${API_BASE}/homestays`);
+  const data=await res.json();
+  const h=data.find(x=>x.id==id);
+  if(!h){ alert("Homestay not found"); return; }
+  document.getElementById("name").textContent=h.name;
+  document.getElementById("location").textContent=h.location;
+  document.getElementById("price").textContent=`RM ${h.price}`;
+  document.getElementById("description").textContent=h.description;
+  const imgDiv=document.getElementById("images");
+  h.images.forEach(i=>{
+    const img=document.createElement("img");
+    img.src=i; imgDiv.appendChild(img);
+  });
+}
+
+document.getElementById("book-btn").addEventListener("click", ()=>{
+  window.location.href=`booking.html?id=${id}`;
+});
+
+loadDetails();
+</script>
+</body>
+</html>

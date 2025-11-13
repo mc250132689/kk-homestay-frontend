@@ -5,23 +5,39 @@
 <title>🏡 KK Homestay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
-<style>
-body {
-  background: url('static/images/kinabalu.jpg') no-repeat center/cover;
-  color: #fff;
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
-}
-</style>
 </head>
 <body>
-<h1>Welcome to KK Homestay</h1>
+<header>
+  <h1>🏡 KK Homestay</h1>
+  <nav>
+    <a href="homestays.html">View Homestays</a>
+    <a href="login.html">Login</a>
+    <a href="signup.html">Signup</a>
+  </nav>
+</header>
+<section>
+  <div class="carousel" id="carousel"></div>
+</section>
 <script>
-  setTimeout(()=>{ window.location.href='home.html'; }, 1000);
+const carouselImages = [
+  '/static/images/kinabalu1.jpg',
+  '/static/images/kinabalu2.jpg',
+  '/static/images/kinabalu3.jpg'
+];
+let current = 0;
+const container = document.getElementById('carousel');
+carouselImages.forEach((src,i)=>{
+  const img=document.createElement('img');
+  img.src=src;
+  if(i===0) img.classList.add('active');
+  container.appendChild(img);
+});
+setInterval(()=>{
+  const imgs = container.querySelectorAll('img');
+  imgs[current].classList.remove('active');
+  current=(current+1)%imgs.length;
+  imgs[current].classList.add('active');
+},3000);
 </script>
 </body>
 </html>

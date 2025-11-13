@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>📊 KK Homestay Booking Analysis</title>
+<title>📊 Booking Analysis</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -10,9 +10,7 @@
 <body>
 <header>
 <h1>Booking Analysis</h1>
-<nav>
-  <a href="admin.html">Back to Admin Dashboard</a>
-</nav>
+<nav><a href="admin.html">Back to Admin Dashboard</a></nav>
 </header>
 
 <section>
@@ -26,66 +24,41 @@
 <script>
 const API_BASE = "https://kk-homestay-backend.onrender.com";
 
-async function fetchBookings() {
-    const res = await fetch(`${API_BASE}/bookings`);
+async function fetchStats() {
+    const res = await fetch(`${API_BASE}/admin-bookings-stats`);
     return await res.json();
 }
 
 async function renderCharts() {
-    const data = await fetchBookings();
+    const data = await fetchStats();
 
-    // Count bookings per homestay
     const homestayCount = {};
     const dateCount = {};
     data.forEach(b => {
-        // Homestay counts
-        homestayCount[b.homestay] = (homestayCount[b.homestay] || 0) + 1;
-
-        // Date counts
-        dateCount[b.date] = (dateCount[b.date] || 0) + 1;
+        homestayCount[b.homestay] = (homestayCount[b.homestay] || 0) + b.bookings;
+        dateCount[b.date] = (dateCount[b.date] || 0) + b.bookings;
     });
 
-    // Prepare data for Chart.js
-    const homestayLabels = Object.keys(homestayCount);
-    const homestayData = Object.values(homestayCount);
-
-    const timeLabels = Object.keys(dateCount).sort();
-    const timeData = timeLabels.map(d => dateCount[d]);
-
-    // Chart: Bookings per Homestay
-    const ctx1 = document.getElementById("homestayChart").getContext("2d");
-    new Chart(ctx1, {
-        type: 'bar',
-        data: {
-            labels: homestayLabels,
-            datasets: [{
-                label: 'Number of Bookings',
-                data: homestayData,
-                backgroundColor: '#007bff'
-            }]
+    // Homestay Chart
+    new Chart(document.getElementById("homestayChart").getContext("2d"),{
+        type:'bar',
+        data:{
+            labels:Object.keys(homestayCount),
+            datasets:[{label:'Bookings', data:Object.values(homestayCount), backgroundColor:'#007bff'}]
         },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true } }
-        }
+        options:{responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
     });
 
-    // Chart: Bookings over Time
-    const ctx2 = document.getElementById("timeChart").getContext("2d");
-    new Chart(ctx2, {
-        type: 'line',
-        data: {
-            labels: timeLabels,
-            datasets: [{
-                label: 'Bookings',
-                data: timeData,
-                fill: false,
-                borderColor: '#28a745',
-                tension: 0.2
-            }]
+    // Time Chart
+    const sortedDates = Object.keys(dateCount).sort();
+    const sortedCounts = sortedDates.map(d=>dateCount[d]);
+    new Chart(document.getElementById("timeChart").getContext("2d"),{
+        type:'line',
+        data:{
+            labels:sortedDates,
+            datasets:[{label:'Bookings', data:sortedCounts, borderColor:'#28a745', fill:false, tension:0.2}]
         },
-        options: { responsive: true }
+        options:{responsive:true}
     });
 }
 

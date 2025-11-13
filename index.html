@@ -6,15 +6,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 <style>
-body { background:url('static/images/kinabalu.jpg') no-repeat center/cover; color:#fff; }
-.carousel { position:relative; max-width:900px; margin:auto; overflow:hidden; border-radius:12px; }
-.carousel img { width:100%; height:400px; object-fit:cover; display:none; transition:opacity 0.5s; }
-.carousel img.active { display:block; opacity:1; }
-.carousel-buttons { position:absolute; top:50%; width:100%; display:flex; justify-content:space-between; transform:translateY(-50%);}
-.carousel-buttons button { background:rgba(0,0,0,0.5); color:white; border:none; padding:10px; cursor:pointer; border-radius:5px; }
+body {
+  background: url('static/images/kinabalu.jpg') no-repeat center/cover;
+  color: #fff;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+header {
+  background: rgba(0,123,255,0.9);
+  padding: 1em;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+nav a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover { text-decoration: underline; }
+
+.carousel {
+  position: relative;
+  max-width: 900px;
+  margin: 20px auto;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.carousel img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  display: none;
+  transition: opacity 0.5s;
+}
+
+.carousel img.active {
+  display: block;
+  opacity: 1;
+}
+
+.carousel-buttons {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+}
+
+.carousel-buttons button {
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+@media(max-width:600px){
+  .carousel img { height: 200px; }
+  header { font-size: 14px; }
+  nav a { margin: 0 5px; font-size: 14px; }
+}
 </style>
 </head>
 <body>
+
 <header>
   <h1>🏡 KK Homestay</h1>
   <nav>
@@ -25,15 +91,22 @@ body { background:url('static/images/kinabalu.jpg') no-repeat center/cover; colo
 </header>
 
 <section>
-  <div class="carousel" id="carousel"></div>
+  <div class="carousel" id="carousel">
+    <div class="carousel-buttons">
+      <button id="prev">&lt;</button>
+      <button id="next">&gt;</button>
+    </div>
+  </div>
 </section>
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
+
 async function loadCarousel(){
   const res=await fetch(`${API_BASE}/homestays`);
   const data=await res.json();
   const carousel=document.getElementById("carousel");
+
   data.forEach(h=>{
     h.images.forEach(img=>{
       const image=document.createElement("img");
@@ -41,15 +114,36 @@ async function loadCarousel(){
       carousel.appendChild(image);
     });
   });
+
   const images=carousel.querySelectorAll("img");
   let idx=0;
   if(images.length) images[0].classList.add("active");
-  setInterval(()=>{
+
+  // Auto-slide every 4 seconds
+  let interval=setInterval(()=>{ showSlide(idx+1); }, 4000);
+
+  // Previous/Next Buttons
+  document.getElementById("prev").onclick = ()=>{
+    showSlide(idx-1);
+    resetInterval();
+  };
+  document.getElementById("next").onclick = ()=>{
+    showSlide(idx+1);
+    resetInterval();
+  };
+
+  function showSlide(n){
     images[idx].classList.remove("active");
-    idx=(idx+1)%images.length;
+    idx = (n+images.length) % images.length;
     images[idx].classList.add("active");
-  },4000);
+  }
+
+  function resetInterval(){
+    clearInterval(interval);
+    interval=setInterval(()=>{ showSlide(idx+1); }, 4000);
+  }
 }
+
 loadCarousel();
 </script>
 </body>

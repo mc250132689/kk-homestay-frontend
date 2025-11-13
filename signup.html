@@ -2,38 +2,47 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Signup - KK Homestay</title>
+<title>Sign Up - KK Homestay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <section>
-<h2>Signup</h2>
+<h2>Sign Up</h2>
 <form id="signup-form">
-    <label>Username</label>
-    <input type="text" id="username" required>
-    <label>Password</label>
-    <input type="password" id="password" required>
-    <button type="submit">Signup</button>
-    <p id="status"></p>
+  <label>Username</label><input type="text" id="username" required>
+  <label>Password</label><input type="password" id="password" required>
+  <button type="submit">Sign Up</button>
+  <p id="status"></p>
 </form>
+<p>Already have an account? <a href="login.html">Login here</a></p>
 </section>
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
-document.getElementById("signup-form").addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    const payload={username: document.getElementById("username").value,
-                   password: document.getElementById("password").value};
-    try {
-        const res=await fetch(`${API_BASE}/signup`,{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify(payload)
-        });
-        const data=await res.json();
-        document.getElementById("status").textContent=data.message;
-    } catch(err){document.getElementById("status").textContent="Signup failed";}
+
+document.getElementById("signup-form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const username=document.getElementById("username").value;
+  const password=document.getElementById("password").value;
+
+  try {
+    const res=await fetch(`${API_BASE}/signup`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({username,password})
+    });
+    if(res.ok){
+      const data=await res.json();
+      alert(data.message);
+      window.location.href="login.html";
+    } else {
+      const err=await res.json();
+      document.getElementById("status").textContent=err.detail;
+    }
+  } catch(err){
+    document.getElementById("status").textContent="Signup failed";
+  }
 });
 </script>
 </body>

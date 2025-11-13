@@ -7,49 +7,48 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><h1>Book Your Stay</h1><nav><a href="homestays.html">Back to Homestays</a></nav></header>
+<header>
+  <h1>Book Your Stay</h1>
+  <nav><a href="homestays.html">Back to Homestays</a></nav>
+</header>
 
 <section>
-<form id="booking-form">
-<input type="hidden" id="homestay_id">
-<input type="hidden" id="user_id">
-<label>Name</label><input type="text" id="name" required>
-<label>Email</label><input type="email" id="email" required>
-<label>Phone</label><input type="text" id="phone" required>
-<label>Date</label><input type="date" id="date" required>
-<button type="submit">Confirm Booking</button>
-<p id="status"></p>
-</form>
+  <form id="booking-form">
+    <input type="hidden" id="homestay_id">
+    <label>Username</label><input type="text" id="username" placeholder="Your username" required>
+    <label>Date</label><input type="date" id="date" required>
+    <button type="submit">Proceed to Payment</button>
+    <p id="status"></p>
+  </form>
 </section>
 
 <script>
-const API_BASE="https://kk-homestay-backend.onrender.com";
-const params=new URLSearchParams(window.location.search);
-document.getElementById("homestay_id").value=params.get("homestay_id");
-document.getElementById("user_id").value=params.get("user_id");
+const API_BASE = "https://kk-homestay-backend.onrender.com";
+const params = new URLSearchParams(window.location.search);
+const homestayId = params.get("homestay_id");
+document.getElementById("homestay_id").value = homestayId || "";
+
 document.getElementById("booking-form").addEventListener("submit", async e=>{
     e.preventDefault();
-    const payload={
-        homestay_id: parseInt(document.getElementById("homestay_id").value),
-        user_id: parseInt(document.getElementById("user_id").value),
-        name: document.getElementById("name").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value,
-        date: document.getElementById("date").value
+    const payload = {
+        homestay_id: homestayId,
+        username: document.getElementById("username").value,
+        date: document.getElementById("date").value,
+        payment_status: "Pending"
     };
-    document.getElementById("status").textContent="Submitting...";
-    try{
-        const res=await fetch(`${API_BASE}/book`, {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
+    document.getElementById("status").textContent = "Creating booking...";
+    try {
+        const res = await fetch(`${API_BASE}/book`, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
             body: JSON.stringify(payload)
         });
-        const r=await res.json();
-        document.getElementById("status").textContent=r.message;
-        // redirect to payment
-        setTimeout(()=>window.location=`payment.html?booking_id=${res.id}`,1000);
-    }catch{
-        document.getElementById("status").textContent="Booking failed";
+        const result = await res.json();
+        document.getElementById("status").textContent = result.message;
+        // Redirect to payment page (PayPal integration)
+        setTimeout(()=> window.location.href = `payment.html?booking_id=${result.id}`, 1500);
+    } catch{
+        document.getElementById("status").textContent = "Booking failed. Please try again.";
     }
 });
 </script>

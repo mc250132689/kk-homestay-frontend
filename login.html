@@ -5,45 +5,37 @@
 <title>Login - KK Homestay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
-<style>
-body { display:flex; justify-content:center; align-items:center; height:100vh; font-family:'Segoe UI',sans-serif; }
-form { background: rgba(255,255,255,0.95); padding:20px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.2);}
-input { display:block; width:100%; margin:10px 0; padding:8px; border-radius:6px; border:1px solid #ccc; }
-.btn { padding:8px 12px; border-radius:8px; cursor:pointer; background:#007BFF; color:#fff; border:none; width:100%; transition:.3s;}
-.btn:hover { background:#0056b3;}
-</style>
 </head>
 <body>
-<form id="login-form">
-<h3>Login</h3>
-<input type="text" id="username" placeholder="Username" required/>
-<input type="password" id="password" placeholder="Password" required/>
-<button class="btn" type="submit">Login</button>
-<p>Don't have account? <a href="signup.html">Signup</a></p>
-</form>
-
+<header>
+  <h1>Login</h1>
+  <nav><a href="index.html">Home</a> | <a href="signup.html">Signup</a></nav>
+</header>
+<section>
+  <form id="loginForm">
+    <input type="text" placeholder="Username" id="username" required>
+    <input type="password" placeholder="Password" id="password" required>
+    <button type="submit">Login</button>
+  </form>
+  <p id="msg"></p>
+</section>
 <script>
-const API="https://kk-homestay-backend.onrender.com";
-document.getElementById('login-form').addEventListener('submit', async e=>{
+document.getElementById('loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const username=document.getElementById('username').value;
   const password=document.getElementById('password').value;
-  try{
-    const res=await fetch(`${API}/login`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username,password})
-    });
-    if(res.ok){
-      const data=await res.json();
-      localStorage.setItem('user',JSON.stringify({username,user_id:data.user_id}));
-      alert(data.message);
-      window.location.href='home.html';
-    } else {
-      const err=await res.json();
-      alert(err.detail);
-    }
-  }catch(e){alert('Error connecting to server');}
+  const res=await fetch('http://127.0.0.1:8000/login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username,password})
+  });
+  const data=await res.json();
+  if(res.ok){
+    localStorage.setItem('user_id',data.user_id);
+    window.location='homestays.html';
+  } else {
+    document.getElementById('msg').textContent=data.detail;
+  }
 });
 </script>
 </body>

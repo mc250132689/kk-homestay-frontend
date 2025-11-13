@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login - KK Homestay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<h1>KK Homestay - Login</h1>
+<nav><a href="signup.html">Sign Up</a></nav>
+</header>
+
+<section>
+<form id="login-form">
+  <label>Username</label><input type="text" id="username" required>
+  <label>Password</label><input type="password" id="password" required>
+  <button type="submit">Login</button>
+  <p id="status"></p>
+</form>
+</section>
+
+<script>
+const API_BASE="https://kk-homestay-backend.onrender.com";
+
+document.getElementById("login-form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const payload={
+    username: document.getElementById("username").value,
+    password: document.getElementById("password").value
+  };
+  try{
+    const res=await fetch(`${API_BASE}/login`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    if(res.ok){
+      localStorage.setItem("username",payload.username);
+      window.location.href="homestays.html";
+    }else{
+      document.getElementById("status").textContent="Invalid credentials";
+    }
+  }catch(err){
+    document.getElementById("status").textContent="Error logging in";
+  }
+});
+</script>
+</body>
+</html>

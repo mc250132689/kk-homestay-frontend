@@ -16,9 +16,9 @@
 <section>
 <form id="booking-form">
   <input type="hidden" id="homestay_id">
+  <input type="hidden" id="user_id">
   <p><strong>User:</strong> <span id="user-name"></span></p>
-  <label>Date</label>
-  <input type="date" id="date" required>
+  <label>Date</label><input type="date" id="date" required>
   <div id="paypal-button-container"></div>
   <p id="status"></p>
 </form>
@@ -28,24 +28,19 @@
 const API_BASE="https://kk-homestay-backend.onrender.com";
 const params=new URLSearchParams(window.location.search);
 const homestayId=params.get("homestay_id");
+const userId=params.get("user_id");
+const username=params.get("username");
+
+if(!userId){ alert("Please login first"); window.location.href="login.html"; }
+
 document.getElementById("homestay_id").value=homestayId;
-
-const userId=sessionStorage.getItem("user_id");
-const username=sessionStorage.getItem("username");
-const price = sessionStorage.getItem("homestay_price");
-
-if(!userId){ 
-  alert("Please login first"); 
-  window.location.href="login.html"; 
-}
+document.getElementById("user_id").value=userId;
 document.getElementById("user-name").textContent=username;
 
 paypal.Buttons({
   createOrder: function(data, actions){
     return actions.order.create({
-      purchase_units:[{
-        amount:{ value: price } 
-      }]
+      purchase_units:[{ amount:{ value:"100.00" } }] // placeholder
     });
   },
   onApprove: function(data, actions){
@@ -55,9 +50,9 @@ paypal.Buttons({
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-          homestay_id: parseInt(homestayId),
-          user_id: parseInt(userId),
-          date: document.getElementById("date").value
+          homestay_id:parseInt(homestayId),
+          user_id:parseInt(userId),
+          date:document.getElementById("date").value
         })
       });
     });

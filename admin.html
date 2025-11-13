@@ -7,30 +7,28 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-<h1>KK Homestay Admin</h1>
-<nav><a href="index.html">Home</a></nav>
-</header>
-
 <section>
+<h2>Admin Login</h2>
 <form id="admin-login-form">
-<label>Username</label><input type="text" id="admin-user" required>
-<label>Password</label><input type="password" id="admin-pass" required>
-<button type="submit">Login</button>
-<p id="status"></p>
+    <label>Username</label><input type="text" id="admin-username">
+    <label>Password</label><input type="password" id="admin-password">
+    <button type="submit">Login</button>
+    <p id="status"></p>
 </form>
 
 <div id="admin-section" style="display:none;">
-<h2>Manage Homestays</h2>
-<form id="admin-form" enctype="multipart/form-data">
-<input type="hidden" id="homestay_id">
-<label>Name</label><input type="text" id="name" required>
-<label>Location</label><input type="text" id="location" required>
-<label>Price</label><input type="number" id="price" required>
-<label>Description</label><textarea id="description" required></textarea>
-<label>Images</label><input type="file" id="images" multiple>
-<button type="submit">Save Homestay</button>
+<h2>Homestays</h2>
+<form id="admin-form">
+    <input type="hidden" id="homestay_id">
+    <label>Name</label><input type="text" id="name" required>
+    <label>Location</label><input type="text" id="location" required>
+    <label>Price</label><input type="number" id="price" required>
+    <label>Description</label><textarea id="description" required></textarea>
+    <label>Upload Images</label><input type="file" id="images" multiple>
+    <button type="submit">Save Homestay</button>
 </form>
+
+<div id="homestay-list"></div>
 
 <h2>Bookings</h2>
 <div id="booking-list"></div>
@@ -39,34 +37,45 @@
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
-
 document.getElementById("admin-login-form").addEventListener("submit", async e=>{
-  e.preventDefault();
-  const user={username:document.getElementById("admin-user").value, password:document.getElementById("admin-pass").value};
-  const res=await fetch(`${API_BASE}/admin-login`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(user)
-  });
-  if(res.ok){
-    alert("Admin login successful");
-    document.getElementById("admin-login-form").style.display="none";
-    document.getElementById("admin-section").style.display="block";
-    fetchBookings();
-  } else alert("Invalid admin credentials");
+    e.preventDefault();
+    const username=document.getElementById("admin-username").value;
+    const password=document.getElementById("admin-password").value;
+    try {
+        const res=await fetch(`${API_BASE}/admin-login`,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({username,password})
+        });
+        const data=await res.json();
+        document.getElementById("status").textContent=data.message;
+        document.getElementById("admin-section").style.display="block";
+        document.getElementById("admin-login-form").style.display="none";
+        loadHomestays();
+        loadBookings();
+    } catch(err){document.getElementById("status").textContent="Login failed";}
 });
 
-async function fetchBookings(){
-  const res=await fetch(`${API_BASE}/bookings`);
-  const data=await res.json();
-  const container=document.getElementById("booking-list");
-  container.innerHTML="";
-  data.forEach(b=>{
-    const div=document.createElement("div");
-    div.className="homestay-card";
-    div.innerHTML=`<p>${b.username} booked ${b.homestay} on ${b.date} — Payment: ${b.payment_status}</p>`;
-    container.appendChild(div);
-  });
+async function loadHomestays(){
+    const res=await fetch(`${API_BASE}/homestays`);
+    const data=await res.json();
+    const container=document.getElementById("homestay-list");
+    container.innerHTML="";
+    data.forEach(h=>{
+        const div=document.createElement("div");
+        div.className="homestay-card";
+        div.innerHTML=`<h3>${h.name}</h3>
+                       <p>${h.location} — RM ${h.price}</p>
+                       <p>${h.description}</p>`;
+        container.appendChild(div);
+    });
+}
+
+async function loadBookings(){
+    const res=await fetch(`${API_BASE}/bookings`);
+    const data=await res.json();
+    const container=document.getElementById("booking-list");
+    container.innerHTML="<ul>"+data.map(b=>`<li>${b.user} booked ${b.homestay} on ${b.date} - Paid: ${b.paid}</li>`).join('')+"</ul>";
 }
 </script>
 </body>

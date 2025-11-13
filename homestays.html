@@ -8,53 +8,43 @@
 </head>
 <body>
 <header>
-  <h1>Available Homestays</h1>
-  <nav><a href="index.html">Home</a></nav>
+<h1>Available Homestays</h1>
+<nav><a href="index.html">Home</a></nav>
 </header>
 
 <section id="homestay-list"></section>
 
 <script>
-const API_BASE = "https://kk-homestay-backend.onrender.com";
+const API_BASE="https://kk-homestay-backend.onrender.com";
+const username = localStorage.getItem("username");
+if(!username){
+  alert("Please login first!");
+  window.location.href="login.html";
+}
 
-async function loadHomestays() {
-    try {
-        const res = await fetch(`${API_BASE}/homestays`);
-        const data = await res.json();
-        const container = document.getElementById("homestay-list");
-        container.innerHTML = "";
-
-        if(!data.length) {
-            container.innerHTML = "<p>No homestays found.</p>";
-            return;
-        }
-
-        data.forEach(h => {
-            const div = document.createElement("div");
-            div.className = "homestay-card";
-
-            let imagesHTML = "";
-            if(h.images && h.images.length){
-                imagesHTML = h.images.map(img => `<img src="${API_BASE}${img}" alt="Homestay image">`).join("");
-            }
-
-            div.innerHTML = `
-                ${imagesHTML}
-                <h3>${h.name}</h3>
-                <p><strong>Location:</strong> ${h.location}</p>
-                <p><strong>Price:</strong> RM ${h.price}/night</p>
-                <p>${h.description}</p>
-                <button onclick="bookNow(${h.id})">Book Now</button>
-            `;
-            container.appendChild(div);
-        });
-    } catch(err){
-        document.getElementById("homestay-list").innerHTML = "Failed to load homestays.";
-    }
+async function loadHomestays(){
+  const res = await fetch(`${API_BASE}/homestays`);
+  const data = await res.json();
+  const container=document.getElementById("homestay-list");
+  container.innerHTML="";
+  data.forEach(h=>{
+    const div=document.createElement("div");
+    div.className="homestay-card";
+    let imagesHTML="";
+    if(h.images) imagesHTML=h.images.map(img=>`<img src="${API_BASE}${img}" alt="Homestay">`).join("");
+    div.innerHTML=`
+      ${imagesHTML}
+      <h3>${h.name}</h3>
+      <p>${h.description}</p>
+      <p><strong>Price:</strong> RM ${h.price}/night</p>
+      <button onclick="bookNow(${h.id})">Book Now</button>
+    `;
+    container.appendChild(div);
+  });
 }
 
 function bookNow(id){
-    window.location.href = `booking.html?homestay_id=${id}`;
+  window.location.href=`booking.html?homestay_id=${id}`;
 }
 
 loadHomestays();

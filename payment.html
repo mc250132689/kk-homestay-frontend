@@ -5,7 +5,6 @@
 <title>💳 Payment - KK Homestay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
-<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
 </head>
 <body>
 <header>
@@ -14,36 +13,45 @@
 </header>
 
 <section>
-  <p>Pay securely via PayPal to confirm your booking.</p>
-  <div id="paypal-button-container"></div>
+  <p id="payment-info"></p>
+  <button id="pay-button">Simulate Payment</button>
+  <p id="status"></p>
 </section>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const bookingId = params.get("booking_id");
 const API_BASE = "https://kk-homestay-backend.onrender.com";
+let userId = localStorage.getItem("user_id");
+let username = localStorage.getItem("username");
+let bookingInfo = JSON.parse(localStorage.getItem("booking_info"));
 
-paypal.Buttons({
-    createOrder: function(data, actions) {
-        return actions.order.create({
-            purchase_units: [{
-                amount: { value: '50.00' } // Replace with dynamic price
-            }]
-        });
-    },
-    onApprove: function(data, actions) {
-        return actions.order.capture().then(async function(details) {
-            alert("Payment completed by " + details.payer.name.given_name);
-            // Update booking payment status
-            await fetch(`${API_BASE}/update-payment`, {
-                method: "POST",
-                headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({ booking_id: bookingId, payment_status: "Paid" })
-            });
-            window.location.href="homestays.html";
-        });
-    }
-}).render('#paypal-button-container');
+if(!userId || !bookingInfo){
+  alert("Missing booking info. Please login and select a homestay.");
+  window.location.href = "homestays.html";
+}
+
+document.getElementById("payment-info").textContent =
+  `User: ${username}\nHomestay ID: ${bookingInfo.homestay_id}\nDate: ${bookingInfo.date}\nPrice: RM 100 (placeholder)`;
+
+document.getElementById("pay-button").addEventListener("click", async ()=>{
+  // simulate payment
+  try{
+    const res = await fetch(`${API_BASE}/book`,{
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        homestay_id: parseInt(bookingInfo.homestay_id),
+        user_id: parseInt(userId),
+        date: bookingInfo.date
+      })
+    });
+    const data = await res.json();
+    document.getElementById("status").textContent = "Payment successful! Booking created.";
+    localStorage.removeItem("booking_info");
+    setTimeout(()=> window.location.href="homestays.html", 1500);
+  }catch(err){
+    document.getElementById("status").textContent = "Payment failed.";
+  }
+});
 </script>
 </body>
 </html>

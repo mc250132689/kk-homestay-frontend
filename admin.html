@@ -6,39 +6,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 <style>
-body {
-  background: url('static/images/mount-kinabalu.jpg') no-repeat center center fixed;
-  background-size: cover;
-  color: #333;
-}
-section {
-  background: rgba(255,255,255,0.95);
-  padding: 20px;
-  margin: 20px auto;
-  border-radius: 10px;
-  max-width: 1000px;
-}
-.homestay-card {
-  display: flex;
-  flex-direction: column;
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 15px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
-}
-.homestay-card img {
-  width: 150px;
-  height: 100px;
-  object-fit: cover;
-  margin: 5px;
-  border-radius: 6px;
-}
+body { background: url('static/images/mount-kinabalu.jpg') no-repeat center center fixed; background-size: cover; color: #333; }
+section { background: rgba(255,255,255,0.95); padding: 20px; margin: 20px auto; border-radius: 10px; max-width: 1000px; }
+.homestay-card { display:flex; flex-direction:column; background:white; padding:15px; border-radius:8px; margin-top:15px; box-shadow:0 0 5px rgba(0,0,0,0.1); }
+.homestay-card img { width:150px; height:100px; object-fit:cover; margin:5px; border-radius:6px; }
 .image-preview { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
 button { cursor:pointer; margin-top:5px; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
-th { background: #007bff; color: white; }
+table { width:100%; border-collapse:collapse; margin-top:10px; }
+th, td { padding:8px; border:1px solid #ccc; text-align:left; }
+th { background:#007bff; color:white; }
 </style>
 </head>
 <body>
@@ -70,13 +46,16 @@ th { background: #007bff; color: white; }
 
 <h3>Bookings</h3>
 <div id="booking-list"></div>
+
+<h3>Users</h3>
+<button id="export-users">Export Users CSV</button>
 </div>
 </section>
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
 
-// ---------------- Admin Login ----------------
+// Admin Login
 document.getElementById("admin-login-form").addEventListener("submit", async e=>{
   e.preventDefault();
   const username=document.getElementById("admin-username").value;
@@ -95,7 +74,7 @@ document.getElementById("admin-login-form").addEventListener("submit", async e=>
   }catch(err){document.getElementById("status").textContent="Login failed";}
 });
 
-// ---------------- Load Homestays ----------------
+// Load Homestays
 async function loadHomestays(){
   const res=await fetch(`${API_BASE}/homestays`);
   const data=await res.json();
@@ -116,40 +95,42 @@ async function loadHomestays(){
   });
 }
 
-// ---------------- Load Bookings ----------------
+// Load Bookings
 async function loadBookings(){
   const res=await fetch(`${API_BASE}/bookings`);
   const data=await res.json();
   const container=document.getElementById("booking-list");
-  if(!data.length){
-    container.innerHTML="<p>No bookings yet.</p>";
-    return;
-  }
+  if(!data.length){ container.innerHTML="<p>No bookings yet.</p>"; return; }
   let html="<table><tr><th>User</th><th>Homestay</th><th>Date</th><th>Paid</th></tr>";
-  data.forEach(b=>{
-    html+=`<tr><td>${b.user}</td><td>${b.homestay}</td><td>${b.date}</td><td>${b.paid?'Yes':'No'}</td></tr>`;
-  });
+  data.forEach(b=>{ html+=`<tr><td>${b.user}</td><td>${b.homestay}</td><td>${b.date}</td><td>${b.paid?'Yes':'No'}</td></tr>`; });
   html+="</table>";
   container.innerHTML=html;
 }
 
-// ---------------- Preview Images ----------------
+// Export Users
+document.getElementById("export-users").addEventListener("click", async ()=>{
+  const res=await fetch(`${API_BASE}/users`);
+  const users=await res.json();
+  const csv='ID,Username\n'+users.map(u=>`${u.id},${u.username}`).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='users.csv'; a.click();
+});
+
+// Image Preview
 document.getElementById("images").addEventListener("change", e=>{
-  const files = e.target.files;
-  const preview = document.getElementById("image-preview");
+  const files=e.target.files;
+  const preview=document.getElementById("image-preview");
   preview.innerHTML="";
   Array.from(files).forEach(f=>{
-    const img = document.createElement("img");
-    img.src = URL.createObjectURL(f);
-    img.style.width="100px";
-    img.style.height="80px";
-    img.style.objectFit="cover";
-    img.style.margin="3px";
+    const img=document.createElement("img");
+    img.src=URL.createObjectURL(f);
+    img.style.width="100px"; img.style.height="80px"; img.style.objectFit="cover"; img.style.margin="3px";
     preview.appendChild(img);
   });
 });
 
-// ---------------- Add/Update Homestay ----------------
+// Add/Update Homestay
 document.getElementById("admin-form").addEventListener("submit", async e=>{
   e.preventDefault();
   const form=new FormData();
@@ -171,7 +152,7 @@ document.getElementById("admin-form").addEventListener("submit", async e=>{
   loadHomestays();
 });
 
-// ---------------- Edit/Delete ----------------
+// Edit/Delete Homestay
 async function editHomestay(id){
   const res=await fetch(`${API_BASE}/homestays`);
   const data=await res.json();
@@ -182,10 +163,9 @@ async function editHomestay(id){
   document.getElementById("location").value=h.location;
   document.getElementById("price").value=h.price;
   document.getElementById("description").value=h.description;
-  const preview = document.getElementById("image-preview");
-  preview.innerHTML = h.images.map(i=>`<img src="${i}" style="width:100px;height:80px;object-fit:cover;margin:3px;">`).join('');
+  const preview=document.getElementById("image-preview");
+  preview.innerHTML=h.images.map(i=>`<img src="${i}" style="width:100px;height:80px;object-fit:cover;margin:3px;">`).join('');
 }
-
 async function deleteHomestay(id){
   if(!confirm("Delete this homestay?")) return;
   await fetch(`${API_BASE}/admin/homestays/${id}`,{method:"DELETE"});

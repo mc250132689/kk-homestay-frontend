@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>💳 Payment - KK Homestay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+</head>
+<body>
+<header><h1>Payment</h1><nav><a href="index.html">Home</a></nav></header>
+<section>
+<p id="booking-info">Loading booking details...</p>
+<div id="paypal-button-container"></div>
+<p id="status"></p>
+</section>
+
+<script>
+const API_BASE="https://kk-homestay-backend.onrender.com";
+const params=new URLSearchParams(window.location.search);
+const bookingId=params.get("booking_id");
+
+async function loadBooking(){
+    const res=await fetch(`${API_BASE}/bookings`);
+    const data=await res.json();
+    const booking=data.find(b=>b.id==bookingId);
+    if(!booking){document.getElementById("booking-info").textContent="Booking not found!"; return;}
+    document.getElementById("booking-info").textContent=
+        `Booking for ${booking.guest} — ${booking.homestay} on ${booking.date} — Payment: ${booking.payment_status}`;
+    if(booking.payment_status==="Paid"){
+        document.getElementById("status").textContent="Payment already completed!";
+        document.getElementById("paypal-button-container").style.display="none";
+        return;
+    }
+    renderPayPalButton(booking);
+}
+
+function renderPayPalButton(booking){
+    paypal.Buttons({
+        createOrder:(data,actions)=>actions.order.create({
+            purchase_units:[{description: booking.homestay, amount:{value: booking.price || "100.00"}}]
+        }),
+        onApprove: (data,actions)=>actions.order.capture().then(async ()=>{
+            document.getElementById("status").textContent="Payment successful! Confirming...";
+            const formData=new FormData();
+            formData.append("booking_id", booking.id);
+            const res=await fetch(`${API_BASE}/payment/confirm`, {method:"POST", body:formData});
+            const result=await res.json();
+            document.getElementById("status").textContent=result.message;
+        }),
+        onError: (err)=>{
+            console.error(err);
+            document.getElementById("status").textContent="Payment failed";
+        }
+    }).render("#paypal-button-container");
+}
+
+loadBooking();
+</script>
+</body>
+</html>

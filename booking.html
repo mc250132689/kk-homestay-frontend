@@ -2,65 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Book KK Homestay</title>
+<title>📅 Booking</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
-<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+<style>
+.container { max-width:600px; margin:20px auto; background:white; padding:15px; border-radius:10px; }
+label, input, select { display:block; margin:10px 0; width:100%; padding:8px; }
+button { margin-top:10px; }
+</style>
 </head>
 <body>
-<header>
-<h1>Book Your Stay</h1>
-<nav><a href="homestays.html">Back to Homestays</a></nav>
-</header>
 
-<section>
+<div class="container">
+<h2>Booking Form</h2>
 <form id="booking-form">
-  <input type="hidden" id="homestay_id">
-  <input type="hidden" id="user_id">
-  <p><strong>User:</strong> <span id="user-name"></span></p>
+  <label>Name</label><input type="text" id="user" required>
+  <label>Email</label><input type="email" id="email" required>
   <label>Date</label><input type="date" id="date" required>
-  <div id="paypal-button-container"></div>
-  <p id="status"></p>
+  <button type="submit">Proceed to Payment</button>
 </form>
-</section>
+</div>
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
 const params=new URLSearchParams(window.location.search);
-const homestayId=params.get("homestay_id");
-const userId=params.get("user_id");
-const username=params.get("username");
+const homestay_id=params.get("id");
 
-if(!userId){ alert("Please login first"); window.location.href="login.html"; }
+document.getElementById("booking-form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const user=document.getElementById("user").value;
+  const email=document.getElementById("email").value;
+  const date=document.getElementById("date").value;
 
-document.getElementById("homestay_id").value=homestayId;
-document.getElementById("user_id").value=userId;
-document.getElementById("user-name").textContent=username;
-
-paypal.Buttons({
-  createOrder: function(data, actions){
-    return actions.order.create({
-      purchase_units:[{ amount:{ value:"100.00" } }] // placeholder
-    });
-  },
-  onApprove: function(data, actions){
-    return actions.order.capture().then(async function(details){
-      document.getElementById("status").textContent="Payment successful!";
-      await fetch(`${API_BASE}/book`,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          homestay_id:parseInt(homestayId),
-          user_id:parseInt(userId),
-          date:document.getElementById("date").value
-        })
-      });
-    });
-  },
-  onError: function(err){
-    document.getElementById("status").textContent="Payment failed";
+  const res=await fetch(`${API_BASE}/bookings`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({user,email,homestay_id,date,paid:false})
+  });
+  const data=await res.json();
+  alert(data.message);
+  if(data.success){
+    window.location.href=`payment.html?booking_id=${data.booking_id}`;
   }
-}).render("#paypal-button-container");
+});
 </script>
 </body>
 </html>

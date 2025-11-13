@@ -30,9 +30,9 @@ const params=new URLSearchParams(window.location.search);
 const homestayId=params.get("homestay_id");
 document.getElementById("homestay_id").value=homestayId;
 
-const userId=localStorage.getItem("user_id");
-const username=localStorage.getItem("username");
-const price = localStorage.getItem("homestay_price");
+const userId=sessionStorage.getItem("user_id");
+const username=sessionStorage.getItem("username");
+const price = sessionStorage.getItem("homestay_price");
 
 if(!userId){ 
   alert("Please login first"); 

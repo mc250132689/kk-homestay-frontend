@@ -16,16 +16,33 @@ section {
   padding: 20px;
   margin: 20px auto;
   border-radius: 10px;
-  max-width: 900px;
+  max-width: 1000px;
 }
-.homestay-card img { width: 100px; height: 80px; object-fit: cover; margin: 5px; border-radius: 6px; }
-button { cursor: pointer; margin-top: 5px; }
+.homestay-card {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+.homestay-card img {
+  width: 150px;
+  height: 100px;
+  object-fit: cover;
+  margin: 5px;
+  border-radius: 6px;
+}
+.image-preview { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
+button { cursor:pointer; margin-top:5px; }
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
 th { background: #007bff; color: white; }
 </style>
 </head>
 <body>
+
 <section>
 <h2>Admin Login</h2>
 <form id="admin-login-form">
@@ -44,6 +61,7 @@ th { background: #007bff; color: white; }
   <label>Price</label><input type="number" id="price" step="0.01" required>
   <label>Description</label><textarea id="description" required></textarea>
   <label>Upload Images</label><input type="file" id="images" multiple>
+  <div class="image-preview" id="image-preview"></div>
   <button type="submit">Save Homestay</button>
 </form>
 
@@ -58,6 +76,7 @@ th { background: #007bff; color: white; }
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
 
+// ---------------- Admin Login ----------------
 document.getElementById("admin-login-form").addEventListener("submit", async e=>{
   e.preventDefault();
   const username=document.getElementById("admin-username").value;
@@ -76,6 +95,7 @@ document.getElementById("admin-login-form").addEventListener("submit", async e=>
   }catch(err){document.getElementById("status").textContent="Login failed";}
 });
 
+// ---------------- Load Homestays ----------------
 async function loadHomestays(){
   const res=await fetch(`${API_BASE}/homestays`);
   const data=await res.json();
@@ -86,7 +106,7 @@ async function loadHomestays(){
     div.className="homestay-card";
     div.innerHTML=`
       <h4>${h.name}</h4>
-      <div>${h.images.map(i=>`<img src="${i}">`).join('')}</div>
+      <div class="image-preview">${h.images.map(i=>`<img src="${i}">`).join('')}</div>
       <p>${h.location} — RM ${h.price}</p>
       <p>${h.description}</p>
       <button onclick="editHomestay(${h.id})">Edit</button>
@@ -96,6 +116,7 @@ async function loadHomestays(){
   });
 }
 
+// ---------------- Load Bookings ----------------
 async function loadBookings(){
   const res=await fetch(`${API_BASE}/bookings`);
   const data=await res.json();
@@ -112,6 +133,23 @@ async function loadBookings(){
   container.innerHTML=html;
 }
 
+// ---------------- Preview Images ----------------
+document.getElementById("images").addEventListener("change", e=>{
+  const files = e.target.files;
+  const preview = document.getElementById("image-preview");
+  preview.innerHTML="";
+  Array.from(files).forEach(f=>{
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(f);
+    img.style.width="100px";
+    img.style.height="80px";
+    img.style.objectFit="cover";
+    img.style.margin="3px";
+    preview.appendChild(img);
+  });
+});
+
+// ---------------- Add/Update Homestay ----------------
 document.getElementById("admin-form").addEventListener("submit", async e=>{
   e.preventDefault();
   const form=new FormData();
@@ -127,10 +165,13 @@ document.getElementById("admin-form").addEventListener("submit", async e=>{
   const res=await fetch(url,{method,body:form});
   const data=await res.json();
   alert(data.message);
+  document.getElementById("admin-form").reset();
+  document.getElementById("homestay_id").value="";
+  document.getElementById("image-preview").innerHTML="";
   loadHomestays();
 });
 
-// Edit homestay
+// ---------------- Edit/Delete ----------------
 async function editHomestay(id){
   const res=await fetch(`${API_BASE}/homestays`);
   const data=await res.json();
@@ -141,7 +182,10 @@ async function editHomestay(id){
   document.getElementById("location").value=h.location;
   document.getElementById("price").value=h.price;
   document.getElementById("description").value=h.description;
+  const preview = document.getElementById("image-preview");
+  preview.innerHTML = h.images.map(i=>`<img src="${i}" style="width:100px;height:80px;object-fit:cover;margin:3px;">`).join('');
 }
+
 async function deleteHomestay(id){
   if(!confirm("Delete this homestay?")) return;
   await fetch(`${API_BASE}/admin/homestays/${id}`,{method:"DELETE"});

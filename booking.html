@@ -1,68 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>KK Homestay - Booking</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>📅 Book KK Homestay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <h1>🏡 KK Homestay</h1>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="homestays.html">Browse</a>
-  </nav>
+  <h1>Book Your Stay</h1>
+  <nav><a href="homestays.html">Back to Homestays</a></nav>
 </header>
-<main>
-  <h2>Book Your Stay</h2>
-  <div id="homestay-details"></div>
+
+<section>
   <form id="booking-form">
     <input type="hidden" id="homestay_id">
-    <label>Name: <input type="text" id="name" required></label>
-    <label>Email: <input type="email" id="email" required></label>
-    <label>Check-in: <input type="date" id="check_in" required></label>
-    <label>Check-out: <input type="date" id="check_out" required></label>
+    <label>Name</label>
+    <input type="text" id="name" required>
+
+    <label>Email</label>
+    <input type="email" id="email" required>
+
+    <label>Phone</label>
+    <input type="text" id="phone" required>
+
+    <label>Date</label>
+    <input type="date" id="date" required>
+
     <button type="submit">Confirm Booking</button>
+    <p id="status"></p>
   </form>
-  <p id="status"></p>
-</main>
+</section>
 
 <script>
 const API_BASE = "https://kk-homestay-backend.onrender.com";
+
 const params = new URLSearchParams(window.location.search);
-const id = params.get('id');
+const homestayId = params.get("homestay_id");
+document.getElementById("homestay_id").value = homestayId || "";
 
-async function loadHomestay(){
-  const res = await fetch(`${API_BASE}/homestays`);
-  const data = await res.json();
-  const h = data.find(x=>x.id==id);
-  if(!h){ document.getElementById('homestay-details').innerHTML='Homestay not found'; return; }
-  document.getElementById('homestay_id').value = h.id;
-  const imgs = JSON.parse(h.images || '["https://via.placeholder.com/400x200"]');
-  let carousel = `<div class="carousel">${imgs.map((img,i)=>`<img src="${img}" class="carousel-img ${i===0?'active':''}">`).join('')}
-  <button class="prev">&#10094;</button><button class="next">&#10095;</button></div>`;
-  document.getElementById('homestay-details').innerHTML = `
-    <div class="homestay-card">${carousel}
-      <h3>${h.name}</h3>
-      <p>${h.description}</p>
-      <p><b>Location:</b> ${h.location}</p>
-      <p><b>Price:</b> RM${h.price}</p>
-    </div>`;
-}
-loadHomestay();
-
-document.getElementById('booking-form').addEventListener('submit', async (e)=>{
+document.getElementById("booking-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const data = new FormData();
-  data.append('homestay_id', document.getElementById('homestay_id').value);
-  data.append('name', document.getElementById('name').value);
-  data.append('email', document.getElementById('email').value);
-  data.append('check_in', document.getElementById('check_in').value);
-  data.append('check_out', document.getElementById('check_out').value);
-  const res = await fetch(`${API_BASE}/book`, {method:'POST', body:data});
-  const result = await res.json();
-  document.getElementById('status').textContent = result.message;
+  const payload = {
+    homestay_id: homestayId,
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    phone: document.getElementById("phone").value,
+    date: document.getElementById("date").value
+  };
+  document.getElementById("status").textContent = "Submitting...";
+
+  try {
+    const res = await fetch(`${API_BASE}/book`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    document.getElementById("status").textContent = result.message || "Success!";
+  } catch {
+    document.getElementById("status").textContent = "Booking failed. Please try again.";
+  }
 });
 </script>
 </body>

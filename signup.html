@@ -2,60 +2,46 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sign Up / Login - KK Homestay</title>
+<title>Sign Up - KK Homestay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><h1>Sign Up / Login</h1></header>
+<header>
+<h1>KK Homestay - Sign Up</h1>
+<nav><a href="login.html">Login</a></nav>
+</header>
+
 <section>
 <form id="signup-form">
-<h3>Sign Up</h3>
-<label>Username</label><input type="text" id="signup-user" required>
-<label>Email</label><input type="email" id="signup-email" required>
-<label>Password</label><input type="password" id="signup-pass" required>
-<button type="submit">Sign Up</button>
+  <label>Username</label><input type="text" id="username" required>
+  <label>Password</label><input type="password" id="password" required>
+  <button type="submit">Sign Up</button>
+  <p id="status"></p>
 </form>
-
-<form id="login-form">
-<h3>Login</h3>
-<label>Username</label><input type="text" id="login-user" required>
-<label>Password</label><input type="password" id="login-pass" required>
-<button type="submit">Login</button>
-</form>
-
-<p id="status"></p>
 </section>
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
-let currentUserId=null;
 
 document.getElementById("signup-form").addEventListener("submit", async e=>{
-    e.preventDefault();
-    const data=new FormData();
-    data.append("username",document.getElementById("signup-user").value);
-    data.append("email",document.getElementById("signup-email").value);
-    data.append("password",document.getElementById("signup-pass").value);
-    try{
-        const res=await fetch(`${API_BASE}/signup`, {method:"POST", body:data});
-        const r=await res.json();
-        document.getElementById("status").textContent=r.message;
-    }catch(err){document.getElementById("status").textContent="Signup failed";}
-});
-
-document.getElementById("login-form").addEventListener("submit", async e=>{
-    e.preventDefault();
-    const data=new FormData();
-    data.append("username",document.getElementById("login-user").value);
-    data.append("password",document.getElementById("login-pass").value);
-    try{
-        const res=await fetch(`${API_BASE}/login`, {method:"POST", body:data});
-        const r=await res.json();
-        currentUserId=r.id;
-        localStorage.setItem("user_id", currentUserId);
-        document.getElementById("status").textContent=r.message;
-    }catch(err){document.getElementById("status").textContent="Login failed";}
+  e.preventDefault();
+  const payload={
+    username: document.getElementById("username").value,
+    password: document.getElementById("password").value
+  };
+  try{
+    const res=await fetch(`${API_BASE}/signup`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const data=await res.json();
+    alert(data.message);
+    window.location.href="login.html";
+  }catch(err){
+    document.getElementById("status").textContent="Username already exists or error.";
+  }
 });
 </script>
 </body>

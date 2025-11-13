@@ -53,6 +53,18 @@ nav a:hover { text-decoration: underline; }
   opacity: 1;
 }
 
+.carousel-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  color: #fff;
+  font-size: 24px;
+  background: rgba(0,0,0,0.5);
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 .carousel-buttons {
   position: absolute;
   top: 50%;
@@ -76,6 +88,7 @@ nav a:hover { text-decoration: underline; }
   .carousel img { height: 200px; }
   header { font-size: 14px; }
   nav a { margin: 0 5px; font-size: 14px; }
+  .carousel-overlay { font-size: 16px; padding: 3px 8px; }
 }
 </style>
 </head>
@@ -100,47 +113,81 @@ nav a:hover { text-decoration: underline; }
 </section>
 
 <script>
-const API_BASE="https://kk-homestay-backend.onrender.com";
+const API_BASE = "https://kk-homestay-backend.onrender.com";
+
+// Get logged-in user info from backend session
+let userId = null;
+let username = null;
+
+async function checkUser() {
+  try {
+    // You should have an endpoint /me or /session returning {user_id, username} if logged in
+    const res = await fetch(`${API_BASE}/me`);
+    if(res.ok){
+      const data = await res.json();
+      userId = data.user_id;
+      username = data.username;
+    }
+  } catch(err){
+    console.log("User not logged in", err);
+  }
+}
 
 async function loadCarousel(){
-  const res=await fetch(`${API_BASE}/homestays`);
-  const data=await res.json();
-  const carousel=document.getElementById("carousel");
+  await checkUser();
 
-  data.forEach(h=>{
-    h.images.forEach(img=>{
-      const image=document.createElement("img");
-      image.src=img;
-      carousel.appendChild(image);
+  const res = await fetch(`${API_BASE}/homestays`);
+  const data = await res.json();
+  const carousel = document.getElementById("carousel");
+
+  const slides = [];
+
+  data.forEach(h => {
+    h.images.forEach(img => {
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      const image = document.createElement("img");
+      image.src = img;
+      wrapper.appendChild(image);
+
+      const overlay = document.createElement("div");
+      overlay.className = "carousel-overlay";
+      overlay.textContent = h.name;
+
+      // Click overlay to go to booking page if logged in
+      overlay.onclick = () => {
+        if(userId) {
+          window.location.href = `booking.html?homestay_id=${h.id}`;
+        } else {
+          alert("Please login first to book a homestay.");
+          window.location.href = "login.html";
+        }
+      };
+
+      wrapper.appendChild(overlay);
+      carousel.appendChild(wrapper);
+      slides.push(wrapper);
     });
   });
 
-  const images=carousel.querySelectorAll("img");
-  let idx=0;
-  if(images.length) images[0].classList.add("active");
-
-  // Auto-slide every 4 seconds
-  let interval=setInterval(()=>{ showSlide(idx+1); }, 4000);
-
-  // Previous/Next Buttons
-  document.getElementById("prev").onclick = ()=>{
-    showSlide(idx-1);
-    resetInterval();
-  };
-  document.getElementById("next").onclick = ()=>{
-    showSlide(idx+1);
-    resetInterval();
-  };
+  let idx = 0;
+  if(slides.length) slides[idx].querySelector("img").classList.add("active");
 
   function showSlide(n){
-    images[idx].classList.remove("active");
-    idx = (n+images.length) % images.length;
-    images[idx].classList.add("active");
+    slides[idx].querySelector("img").classList.remove("active");
+    idx = (n + slides.length) % slides.length;
+    slides[idx].querySelector("img").classList.add("active");
   }
+
+  let interval = setInterval(()=> showSlide(idx+1), 4000);
+
+  document.getElementById("prev").onclick = ()=>{ showSlide(idx-1); resetInterval(); };
+  document.getElementById("next").onclick = ()=>{ showSlide(idx+1); resetInterval(); };
 
   function resetInterval(){
     clearInterval(interval);
-    interval=setInterval(()=>{ showSlide(idx+1); }, 4000);
+    interval = setInterval(()=> showSlide(idx+1), 4000);
   }
 }
 

@@ -16,8 +16,11 @@
 <section>
 <form id="booking-form">
   <input type="hidden" id="homestay_id">
+  <input type="hidden" id="price">
   <p><strong>User:</strong> <span id="user-name"></span></p>
-  <label>Date</label><input type="date" id="date" required>
+  <p><strong>Price (RM):</strong> <span id="price-display"></span></p>
+  <label>Date</label>
+  <input type="date" id="date" required>
   <div id="paypal-button-container"></div>
   <p id="status"></p>
 </form>
@@ -26,35 +29,49 @@
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
 const params=new URLSearchParams(window.location.search);
-const homestayId=params.get("homestay_id");
-document.getElementById("homestay_id").value=homestayId;
+const homestayId = params.get("homestay_id");
+const priceRM = parseFloat(params.get("price") || 100);
+document.getElementById("homestay_id").value = homestayId;
+document.getElementById("price").value = priceRM;
+document.getElementById("price-display").textContent = priceRM;
 
-const userId=localStorage.getItem("user_id");
-const username=localStorage.getItem("username");
-if(!userId){ alert("Please login first"); window.location.href="login.html"; }
-document.getElementById("user-name").textContent=username;
+const userId = localStorage.getItem("user_id");
+const username = localStorage.getItem("username");
+if(!userId){
+  alert("Please login first");
+  window.location.href = "login.html";
+}
+document.getElementById("user-name").textContent = username;
+
+// Convert RM to USD (example 1 USD = 4.5 RM)
+const priceUSD = (priceRM / 4.5).toFixed(2);
 
 paypal.Buttons({
   createOrder: function(data, actions){
     return actions.order.create({
       purchase_units:[{
-        amount:{ value:"100.00" } // placeholder, can set per homestay price dynamically
+        amount:{ value: priceUSD }
       }]
     });
   },
   onApprove: function(data, actions){
     return actions.order.capture().then(async function(details){
-      document.getElementById("status").textContent="Payment successful!";
+      document.getElementById("status").textContent = "Payment successful!";
       // record booking in backend
       await fetch(`${API_BASE}/book`,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({homestay_id:parseInt(homestayId),user_id:parseInt(userId),date:document.getElementById("date").value})
+        body:JSON.stringify({
+          homestay_id: parseInt(homestayId),
+          user_id: parseInt(userId),
+          date: document.getElementById("date").value
+        })
       });
     });
   },
   onError: function(err){
-    document.getElementById("status").textContent="Payment failed";
+    document.getElementById("status").textContent = "Payment failed";
+    console.error(err);
   }
 }).render("#paypal-button-container");
 </script>

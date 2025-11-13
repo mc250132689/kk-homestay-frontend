@@ -6,39 +6,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 <style>
-.homestay-card img { width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:8px; }
-@media(max-width:600px){ .homestay-card img{height:150px;} }
+.homestay-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+@media(max-width:600px) {
+  .homestay-card img { height: 150px; }
+}
 </style>
 </head>
 <body>
 <header>
   <h1>Available Homestays</h1>
-  <nav><a href="index.html">Home</a></nav>
+  <nav><a href="index.html">Home</a> | <a href="login.html">Login</a></nav>
 </header>
 
 <section id="homestay-list"></section>
 
 <script>
-const API_BASE="https://kk-homestay-backend.onrender.com";
-async function loadHomestays(){
-  const res=await fetch(`${API_BASE}/homestays`);
-  const data=await res.json();
-  const container=document.getElementById("homestay-list");
-  container.innerHTML="";
-  data.forEach(h=>{
-    const div=document.createElement("div");
-    div.className="homestay-card";
-    div.innerHTML=`<h3>${h.name}</h3>
-      <p><strong>Location:</strong> ${h.location}</p>
-      <p><strong>Price:</strong> RM ${h.price}/night</p>
-      <div>${h.images.map(i=>`<img src="${i}">`).join('')}</div>
-      <p>${h.description}</p>
-      <button onclick="bookNow(${h.id})">Book Now</button>`;
-    container.appendChild(div);
-  });
+const API_BASE = "https://kk-homestay-backend.onrender.com";
+
+// Ensure user is logged in
+const userId = localStorage.getItem("user_id");
+if(!userId){
+  alert("Please login first to book a homestay.");
+  window.location.href = "login.html";
 }
 
-function bookNow(id){ window.location.href=`booking.html?homestay_id=${id}`; }
+async function loadHomestays(){
+  try {
+    const res = await fetch(`${API_BASE}/homestays`);
+    const data = await res.json();
+    const container = document.getElementById("homestay-list");
+    container.innerHTML = "";
+
+    if(!data.length){
+      container.innerHTML = "<p>No homestays found.</p>";
+      return;
+    }
+
+    data.forEach(h => {
+      const div = document.createElement("div");
+      div.className = "homestay-card";
+      div.innerHTML = `
+        <h3>${h.name}</h3>
+        <p><strong>Location:</strong> ${h.location}</p>
+        <p><strong>Price:</strong> RM ${h.price}/night</p>
+        <div>${h.images.map(i => `<img src="${i}">`).join('')}</div>
+        <p>${h.description}</p>
+        <button onclick="bookNow(${h.id}, ${h.price})">Book Now</button>
+      `;
+      container.appendChild(div);
+    });
+
+  } catch(err){
+    document.getElementById("homestay-list").innerHTML = "Failed to load homestays.";
+    console.error(err);
+  }
+}
+
+// Pass price to booking page for PayPal
+function bookNow(id, price){
+  window.location.href = `booking.html?homestay_id=${id}&price=${price}`;
+}
+
 loadHomestays();
 </script>
 </body>

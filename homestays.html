@@ -7,22 +7,23 @@
 <link rel="stylesheet" href="style.css">
 <style>
 .homestay-card img { width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:8px; }
-.homestay-card button { width: 100%; }
 @media(max-width:600px){ .homestay-card img{height:150px;} }
 </style>
 </head>
 <body>
 <header>
-  <h1>Available Homestays</h1>
-  <nav><a href="index.html">Home</a> | <a href="login.html">Login / Signup</a></nav>
+<h1>Available Homestays</h1>
+<nav><a href="index.html">Home</a></nav>
 </header>
 
 <section id="homestay-list"></section>
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
-const userId = sessionStorage.getItem("user_id");
-const username = sessionStorage.getItem("username");
+const params=new URLSearchParams(window.location.search);
+const userId=params.get("user_id");
+const username=params.get("username");
+if(!userId){ alert("Please login first"); window.location.href="login.html"; }
 
 async function loadHomestays(){
   const res=await fetch(`${API_BASE}/homestays`);
@@ -32,25 +33,18 @@ async function loadHomestays(){
   data.forEach(h=>{
     const div=document.createElement("div");
     div.className="homestay-card";
-    div.innerHTML=`
-      <h3>${h.name}</h3>
+    div.innerHTML=`<h3>${h.name}</h3>
       <p><strong>Location:</strong> ${h.location}</p>
       <p><strong>Price:</strong> RM ${h.price}/night</p>
       <div>${h.images.map(i=>`<img src="${i}">`).join('')}</div>
       <p>${h.description}</p>
-      <button onclick="bookNow(${h.id}, ${h.price})">Book Now</button>`;
+      <button onclick="bookNow(${h.id})">Book Now</button>`;
     container.appendChild(div);
   });
 }
 
-function bookNow(id, price){
-  if(!userId){ 
-    alert("Please login first"); 
-    window.location.href="login.html"; 
-    return;
-  }
-  sessionStorage.setItem("homestay_price", price);
-  window.location.href=`booking.html?homestay_id=${id}`;
+function bookNow(id){
+  window.location.href=`booking.html?homestay_id=${id}&user_id=${userId}&username=${username}`;
 }
 
 loadHomestays();

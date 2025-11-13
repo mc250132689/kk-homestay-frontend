@@ -14,18 +14,15 @@
 <body>
 <header>
   <h1>Available Homestays</h1>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login / Signup</a>
-  </nav>
+  <nav><a href="index.html">Home</a> | <a href="login.html">Login / Signup</a></nav>
 </header>
 
 <section id="homestay-list"></section>
 
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
-const userId = localStorage.getItem("user_id");
-const username = localStorage.getItem("username");
+const userId = sessionStorage.getItem("user_id");
+const username = sessionStorage.getItem("username");
 
 async function loadHomestays(){
   const res=await fetch(`${API_BASE}/homestays`);
@@ -52,8 +49,7 @@ function bookNow(id, price){
     window.location.href="login.html"; 
     return;
   }
-  // Save price to localStorage for booking page
-  localStorage.setItem("homestay_price", price);
+  sessionStorage.setItem("homestay_price", price);
   window.location.href=`booking.html?homestay_id=${id}`;
 }
 

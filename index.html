@@ -1,67 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>🏡 KK Homestay</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
-<style>
-.carousel {
-  position: relative;
-  width: 100%;
-  max-width: 800px;
-  margin: auto;
-  overflow: hidden;
-  border-radius: 12px;
-}
-
-.carousel-images img {
-  width: 100%;
-  display: none;
-  border-radius: 12px;
-}
-
-.carousel-images img.active {
-  display: block;
-}
-
-.carousel-buttons {
-  position: absolute;
-  top: 50%;
-  width: 100%;
-  display:flex;
-  justify-content: space-between;
-  transform: translateY(-50%);
-}
-
-.carousel-buttons button {
-  background: rgba(0,0,0,0.5);
-  color: white;
-  border:none;
-  padding:8px 16px;
-  cursor:pointer;
-  border-radius: 6px;
-}
-</style>
-</head>
-<body>
-<header>
-  <h1>🏡 KK Homestay</h1>
-  <nav>
-    <a href="login.html">Login</a>
-    <a href="signup.html">Sign Up</a>
-  </nav>
-</header>
-
+<!-- Inside <body> -->
 <section>
-  <h2>Explore Homestays</h2>
-  <div class="carousel">
+<h2>Explore Homestays</h2>
+<div class="carousel">
     <div class="carousel-images" id="carousel-images"></div>
     <div class="carousel-buttons">
-      <button onclick="prevSlide()">‹</button>
-      <button onclick="nextSlide()">›</button>
+        <button onclick="prevSlide()">‹</button>
+        <button onclick="nextSlide()">›</button>
     </div>
-  </div>
+</div>
 </section>
 
 <script>
@@ -70,39 +16,37 @@ let currentIndex=0;
 let images=[];
 
 async function loadCarousel(){
-  const res=await fetch(`${API_BASE}/homestays`);
-  const data=await res.json();
-  images=[];
-  data.forEach(h=>{
-    if(h.images) images.push(...h.images);
-  });
-  const container=document.getElementById("carousel-images");
-  container.innerHTML="";
-  images.forEach((img,i)=>{
-    const el=document.createElement("img");
-    el.src=`${API_BASE}${img}`;
-    if(i===0) el.classList.add("active");
-    container.appendChild(el);
-  });
+    const res=await fetch(`${API_BASE}/homestays`);
+    const data=await res.json();
+    images=[];
+    data.forEach(h=>{
+        if(h.images) images.push(...h.images);
+    });
+    const container=document.getElementById("carousel-images");
+    container.innerHTML="";
+    images.forEach((img,i)=>{
+        const el=document.createElement("img");
+        el.src=`${API_BASE}${img}`;
+        if(i===0) el.classList.add("active");
+        container.appendChild(el);
+    });
 }
 
 function showSlide(index){
-  const imgs=document.querySelectorAll(".carousel-images img");
-  imgs.forEach(img=>img.classList.remove("active"));
-  if(imgs[index]) imgs[index].classList.add("active");
+    const imgs=document.querySelectorAll(".carousel-images img");
+    imgs.forEach(img=>img.classList.remove("active"));
+    if(imgs[index]) imgs[index].classList.add("active");
 }
 
 function prevSlide(){
-  currentIndex=(currentIndex-1+images.length)%images.length;
-  showSlide(currentIndex);
+    currentIndex=(currentIndex-1+images.length)%images.length;
+    showSlide(currentIndex);
 }
 
 function nextSlide(){
-  currentIndex=(currentIndex+1)%images.length;
-  showSlide(currentIndex);
+    currentIndex=(currentIndex+1)%images.length;
+    showSlide(currentIndex);
 }
 
 loadCarousel();
 </script>
-</body>
-</html>

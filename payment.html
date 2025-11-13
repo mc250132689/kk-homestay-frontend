@@ -8,54 +8,42 @@
 <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
 </head>
 <body>
-<header><h1>Payment</h1><nav><a href="index.html">Home</a></nav></header>
+<header>
+  <h1>Complete Payment</h1>
+  <nav><a href="homestays.html">Back to Homestays</a></nav>
+</header>
+
 <section>
-<p id="booking-info">Loading booking details...</p>
-<div id="paypal-button-container"></div>
-<p id="status"></p>
+  <p>Pay securely via PayPal to confirm your booking.</p>
+  <div id="paypal-button-container"></div>
 </section>
 
 <script>
-const API_BASE="https://kk-homestay-backend.onrender.com";
-const params=new URLSearchParams(window.location.search);
-const bookingId=params.get("booking_id");
+const params = new URLSearchParams(window.location.search);
+const bookingId = params.get("booking_id");
+const API_BASE = "https://kk-homestay-backend.onrender.com";
 
-async function loadBooking(){
-    const res=await fetch(`${API_BASE}/bookings`);
-    const data=await res.json();
-    const booking=data.find(b=>b.id==bookingId);
-    if(!booking){document.getElementById("booking-info").textContent="Booking not found!"; return;}
-    document.getElementById("booking-info").textContent=
-        `Booking for ${booking.guest} — ${booking.homestay} on ${booking.date} — Payment: ${booking.payment_status}`;
-    if(booking.payment_status==="Paid"){
-        document.getElementById("status").textContent="Payment already completed!";
-        document.getElementById("paypal-button-container").style.display="none";
-        return;
+paypal.Buttons({
+    createOrder: function(data, actions) {
+        return actions.order.create({
+            purchase_units: [{
+                amount: { value: '50.00' } // Replace with dynamic price
+            }]
+        });
+    },
+    onApprove: function(data, actions) {
+        return actions.order.capture().then(async function(details) {
+            alert("Payment completed by " + details.payer.name.given_name);
+            // Update booking payment status
+            await fetch(`${API_BASE}/update-payment`, {
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({ booking_id: bookingId, payment_status: "Paid" })
+            });
+            window.location.href="homestays.html";
+        });
     }
-    renderPayPalButton(booking);
-}
-
-function renderPayPalButton(booking){
-    paypal.Buttons({
-        createOrder:(data,actions)=>actions.order.create({
-            purchase_units:[{description: booking.homestay, amount:{value: booking.price || "100.00"}}]
-        }),
-        onApprove: (data,actions)=>actions.order.capture().then(async ()=>{
-            document.getElementById("status").textContent="Payment successful! Confirming...";
-            const formData=new FormData();
-            formData.append("booking_id", booking.id);
-            const res=await fetch(`${API_BASE}/payment/confirm`, {method:"POST", body:formData});
-            const result=await res.json();
-            document.getElementById("status").textContent=result.message;
-        }),
-        onError: (err)=>{
-            console.error(err);
-            document.getElementById("status").textContent="Payment failed";
-        }
-    }).render("#paypal-button-container");
-}
-
-loadBooking();
+}).render('#paypal-button-container');
 </script>
 </body>
 </html>

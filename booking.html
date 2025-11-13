@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KK Homestay Booking</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<h1>KK Homestay Booking</h1>
+<a href="homestays.html">Back</a>
+</header>
+<main>
+<div id="mini-carousel"></div>
+<form id="booking-form">
+<input type="hidden" id="homestay_id">
+<label>Name: <input type="text" id="customer_name" required></label>
+<label>Email: <input type="email" id="customer_email" required></label>
+<label>Check-in: <input type="date" id="check_in" required></label>
+<label>Check-out: <input type="date" id="check_out" required></label>
+<button type="submit">Book Now</button>
+</form>
+<p id="status"></p>
+</main>
+<script>
+const params=new URLSearchParams(window.location.search);
+const homestayId=params.get('id'); document.getElementById('homestay_id').value=homestayId;
+async function loadHomestay(){
+const res=await fetch('http://127.0.0.1:8000/homestays');
+const homestays=await res.json();
+const h=homestays.find(x=>x.id==homestayId); if(!h)return;
+const imgs=JSON.parse(h.images||'["https://via.placeholder.com/400x200"]');
+const carousel=document.getElementById('mini-carousel');
+carousel.innerHTML=imgs.map((img,i)=>`<img src="${img}" class="${i===0?'active':''}">`).join('')+
+`<button class="prev">&#10094;</button><button class="next">&#10095;</button>`;
+let index=0;
+const imgEls=carousel.querySelectorAll('img');
+carousel.querySelector('.prev').addEventListener('click',()=>{imgEls[index].classList.remove('active');index=(index-1+imgEls.length)%imgEls.length;imgEls[index].classList.add('active');});
+carousel.querySelector('.next').addEventListener('click',()=>{imgEls[index].classList.remove('active');index=(index+1)%imgEls.length;imgEls[index].classList.add('active');});
+let startX=0;
+carousel.addEventListener('touchstart',e=>startX=e.touches[0].clientX);
+carousel.addEventListener('touchend',e=>{const endX=e.changedTouches[0].clientX;if(endX-startX>50){imgEls[index].classList.remove('active');index=(index-1+imgEls.length)%imgEls.length;imgEls[index].classList.add('active');}else if(startX-endX>50){imgEls[index].classList.remove('active');index=(index+1)%imgEls.length;imgEls[index].classList.add('active');}});
+setInterval(()=>{imgEls[index].classList.remove('active');index=(index+1)%imgEls.length;imgEls[index].classList.add('active');},4000);
+}
+loadHomestay();
+document.getElementById('booking-form').addEventListener('submit',async e=>{e.preventDefault();const data=new FormData(e.target);const res=await fetch('http://127.0.0.1:8000/book',{method:'POST',body:data});const result=await res.json();document.getElementById('status').textContent=result.message;});
+</script>
+</body>
+</html>

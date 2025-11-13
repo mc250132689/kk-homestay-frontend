@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KK Homestay - Browse</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<h1>🏡 Browse Homestays</h1>
+<a href="index.html">Home</a>
+</header>
+<main>
+<div id="homestay-list"></div>
+</main>
+<script>
+async function fetchHomestays(){
+const res=await fetch('http://127.0.0.1:8000/homestays');
+const homestays=await res.json();
+const container=document.getElementById('homestay-list');
+container.innerHTML=homestays.map(h=>{
+let imgs=JSON.parse(h.images||'["https://via.placeholder.com/400x200"]');
+let carousel=`<div class="carousel">${imgs.map((img,i)=>`<img src="${img}" class="carousel-img ${i===0?'active':''}">`).join('')}
+<button class="prev">&#10094;</button><button class="next">&#10095;</button></div>`;
+return `<div class="homestay-card"><div>${carousel}<h3>${h.name}</h3><p>${h.description}</p>
+<p>Location: ${h.location}</p><p>Price: $${h.price}</p></div>
+<div class="card-buttons"><a href="booking.html?id=${h.id}"><button>Book Now</button></a></div></div>`;
+}).join('');
+document.querySelectorAll('.homestay-card').forEach(card=>{
+let index=0;
+const imgs=card.querySelectorAll('.carousel-img');
+const prev=card.querySelector('.prev');
+const next=card.querySelector('.next');
+const carouselEl=card.querySelector('.carousel');
+function showImg(i){imgs.forEach(im=>im.classList.remove('active'));imgs[i].classList.add('active');}
+prev.addEventListener('click',()=>{index=(index-1+imgs.length)%imgs.length;showImg(index);});
+next.addEventListener('click',()=>{index=(index+1)%imgs.length;showImg(index);});
+let startX=0;
+carouselEl.addEventListener('touchstart',e=>startX=e.touches[0].clientX);
+carouselEl.addEventListener('touchend',e=>{
+let endX=e.changedTouches[0].clientX;
+if(endX-startX>50){index=(index-1+imgs.length)%imgs.length;showImg(index);}
+else if(startX-endX>50){index=(index+1)%imgs.length;showImg(index);}
+});
+setInterval(()=>{index=(index+1)%imgs.length;showImg(index);},4000);
+});
+}
+fetchHomestays();
+</script>
+</body>
+</html>

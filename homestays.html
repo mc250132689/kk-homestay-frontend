@@ -2,51 +2,51 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>🏡 KK Homestays</title>
+<title>Homestays - KK Homestay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
-<style>
-.homestay-card img { width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:8px; }
-@media(max-width:600px){ .homestay-card img{height:150px;} }
-</style>
 </head>
 <body>
 <header>
-<h1>Available Homestays</h1>
-<nav><a href="index.html">Home</a></nav>
+  <h1>Available Homestays</h1>
+  <nav>
+    <a href="index.html">Home</a> | 
+    <a href="login.html">Login</a> | 
+    <a href="signup.html">Signup</a>
+  </nav>
 </header>
-
-<section id="homestay-list"></section>
-
+<section id="homestaysContainer"></section>
 <script>
-const API_BASE="https://kk-homestay-backend.onrender.com";
-let userId = localStorage.getItem("user_id");
-let username = localStorage.getItem("username");
-if(!userId){ alert("Please login first"); window.location.href="login.html"; }
-
 async function loadHomestays(){
-  const res = await fetch(`${API_BASE}/homestays`);
-  const data = await res.json();
-  const container = document.getElementById("homestay-list");
-  container.innerHTML="";
-  data.forEach(h => {
-    const div = document.createElement("div");
-    div.className="homestay-card";
+  const res=await fetch('http://127.0.0.1:8000/homestays');
+  const homestays=await res.json();
+  const container=document.getElementById('homestaysContainer');
+  container.innerHTML='';
+  homestays.forEach(h=>{
+    const div=document.createElement('div');
+    div.className='homestay-card';
     div.innerHTML=`
       <h3>${h.name}</h3>
-      <div>${h.images.map(i=>`<img src="${i}">`).join('')}</div>
-      <p><strong>Location:</strong> ${h.location}</p>
-      <p><strong>Price:</strong> RM ${h.price}/night</p>
+      <p>${h.location}</p>
+      <p>Price: RM${h.price}</p>
+      <div>${h.images.map(img=>`<img src="${img}">`).join('')}</div>
       <p>${h.description}</p>
-      <button onclick="viewDetails(${h.id})">View Details</button>`;
+      <button onclick="book(${h.id})">Book Now</button>
+    `;
     container.appendChild(div);
   });
 }
-
-function viewDetails(id){
-  window.location.href=`homestay_details.html?homestay_id=${id}`;
+function book(hid){
+  const user_id = localStorage.getItem('user_id');
+  if(!user_id){ alert('Please login first'); return; }
+  const date = prompt("Enter booking date (YYYY-MM-DD)");
+  if(!date) return;
+  fetch('http://127.0.0.1:8000/book',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({homestay_id:hid,user_id,date})
+  }).then(()=>alert('Booking confirmed!'));
 }
-
 loadHomestays();
 </script>
 </body>

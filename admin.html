@@ -5,9 +5,13 @@
 <title>🛠️ KK Homestay Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<header><h1>Admin Dashboard</h1><nav><a href="index.html">Home</a></nav></header>
+<header>
+<h1>Admin Dashboard</h1>
+<nav><a href="index.html">Home</a> | <a href="admin_analysis.html">View Analysis</a></nav>
+</header>
 
 <section>
 <form id="admin-login-form">
@@ -37,22 +41,18 @@
 <script>
 const API_BASE="https://kk-homestay-backend.onrender.com";
 
+// Admin login: username=admin, password=admin
 document.getElementById("admin-login-form").addEventListener("submit", async e=>{
     e.preventDefault();
-    const data=new FormData();
-    data.append("username",document.getElementById("admin-user").value);
-    data.append("password",document.getElementById("admin-pass").value);
-    try{
-        const res=await fetch(`${API_BASE}/admin/login`, {method:"POST", body:data});
-        const r=await res.json();
-        alert(r.message);
+    const user=document.getElementById("admin-user").value;
+    const pass=document.getElementById("admin-pass").value;
+    if(user==="admin" && pass==="admin"){
+        alert("Login successful");
         document.getElementById("admin-login-form").style.display="none";
         document.getElementById("admin-section").style.display="block";
         fetchHomestays();
         fetchBookings();
-    }catch{
-        alert("Login failed");
-    }
+    } else { alert("Invalid credentials"); }
 });
 
 async function fetchHomestays(){
@@ -64,9 +64,7 @@ async function fetchHomestays(){
     data.forEach(h=>{
         const div=document.createElement("div");
         div.className="homestay-card";
-        div.innerHTML=`<h3>${h.name}</h3>
-<p><b>${h.location}</b> — RM ${h.price}</p>
-<p>${h.description}</p>
+        div.innerHTML=`<h3>${h.name}</h3><p>${h.location}</p><p>RM ${h.price}</p><p>${h.description}</p>
 <p>Images: ${(h.images||[]).join(", ")}</p>`;
         list.appendChild(div);
     });
@@ -94,7 +92,7 @@ document.getElementById("admin-form").addEventListener("submit", async e=>{
     formData.append("price",document.getElementById("price").value);
     formData.append("description",document.getElementById("description").value);
     const files=document.getElementById("images").files;
-    for(let i=0;i<files.length;i++){formData.append("files",files[i]);}
+    for(let i=0;i<files.length;i++) formData.append("files",files[i]);
     const url=id?`${API_BASE}/admin/homestays/${id}`:`${API_BASE}/admin/homestays`;
     const method=id?"PUT":"POST";
     const res=await fetch(url,{method,body:formData});
